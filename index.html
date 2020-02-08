@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>Fish</title>
+
+    <style type="text/css" media="all">
+      html {
+        box-sizing: border-box;
+      }
+      *, *:before, *:after {
+        box-sizing: inherit;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: Monospace;
+        font-size: 13px;
+      }
+
+      ul {
+        list-style-type: none;
+      }
+
+      .inline-block {
+        display: inline-block;
+      }
+
+      .margin-left-2rem {
+        margin-left: 2rem;
+      }
+    </style>
+
+    <script>
+      // Events
+
+      function backup() {
+        console.log('backing up..');
+      }
+
+      function restore(event) {
+        console.log('restoring..');
+      }
+
+      function addEntry(event) {
+        event.preventDefault();
+
+        const guid = uuidv4();
+        const date = new Date();
+        const rawDuration = event.target.duration.value;
+        const duration = parseDuration(rawDuration);
+        const rawDescription = event.target.description.value;
+        const description = rawDescription + `. Raw duration: ${rawDuration}`;
+        const tags = parseTags(description);
+
+        saveEntry({ guid, date, duration, tags, description });
+        rerender();
+      }
+
+      window.onload = rerender;
+
+      // Private
+
+      function saveEntry(entry) {
+        const newEntries = entries();
+        newEntries.unshift(entry);
+
+        localStorage.setItem('fishEntries', JSON.stringify(newEntries));
+      }
+
+      function entries() {
+        const content = localStorage.getItem('fishEntries');
+
+        if (content) {
+          return JSON.parse(content);
+        } else {
+          return [];
+        }
+      }
+
+      function clearEntries() {
+        localStorage.clear();
+      }
+
+      function rerender() {
+        const currentEntries = entries();
+        const keyFunction = (item) => { return getIso8601Date(item['date']) };
+        const groupedByDate = groupBy(currentEntries, keyFunction)
+
+        for (key of Object.keys(groupedByDate)) {
+          const main = document.getElementsByTagName('main')[0];
+
+          const newDay = new OneDay();
+          newDay.innerHTML = '<span slot="date">hovno</span>'
+          main.appendChild(newDay);
+        }
+      }
+
+      function uuidv4() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+          var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+          return v.toString(16);
+        });
+      }
+
+      // function parseDuration(raw) {
+      //   if (raw.indexOf('s') > -1) {
+      //     const value = raw.match(/\d*/)[0];
+      //     return parseFloat(value);
+      //   } else if (raw.indexOf('m') > -1) {
+      //     const value = raw.match(/\d*/)[0];
+      //     return parseFloat(value) * 60;
+      //   } else if (raw.indexOf('h') > -1) {
+      //     const value = raw.match(/\d*/)[0];
+      //     return parseFloat(value) * 60 * 60;
+      //   } else {
+      //     return null;
+      //   }
+      // }
+      //
+      // function parseTags(raw) {
+      //   return Array.from(raw.matchAll(/#\w*/g));
+      // }
+      //
+      // function groupBy(array, keyFunction) {
+      //   return array.reduce(function(memo, item) {
+      //     const key = keyFunction(item);
+      //
+      //     (memo[key] = memo[key] || []).push(item);
+      //
+      //     return memo;
+      //   }, {});
+      // };
+      //
+      // function getIso8601Date(date) {
+      //   const parsedDate = new Date(date);
+      //   return parsedDate.toISOString().slice(0,10);
+      // }
+      //
+      // class OneDay extends HTMLElement {
+      //   constructor() {
+      //     super();
+      //     const template = document.getElementById('one-day').content;
+      //     const shadowRoot = this.attachShadow({ mode: 'open' })
+      //       .appendChild(template.cloneNode(true));
+      //   }
+      // }
+      // customElements.define('one-day', OneDay);
+    </script>
+  </head>
+  <body>
+    <template id="one-day-template">
+      <section>
+        <h1><slot name="date">date</slot></h1>
+        <ul>
+          <li>
+            <details>
+              <summary>#abo 2.5h</summary>
+              <p>1h ahoj</p>
+              <p>1.5h druhy</p>
+            </details>
+          </li>
+          <li>#barman 50m</li>
+          <li>#poolec 20m</li>
+        </ul>
+      </section>
+    </template>
+
+    <header>
+      <nav>
+        <h1 class="inline-block">Fish</h1>
+
+        <form class="inline-block margin-left-2rem" onsubmit="addEntry(event)">
+          <label for="duration">Duration</label>
+          <input type="text" id="duration" name="duration" required>
+
+          <label for="duration">Description</label>
+          <input type="text" id="description" name="description" required>
+          <button type="submit">Add</button>
+        </form>
+
+        <span class="margin-left-2rem">
+          <button onclick="backup()">Backup</button>
+
+          <label for="restore">Restore:</label>
+          <input type="file" id="restore" name="restore" onchange="restore(event)">
+        </span>
+      </nav>
+    </header>
+
+    <main>
+      <!-- <one&#45;day></one&#45;day> -->
+
+      <section>
+        <h1><time datetime="2020-02-08">2020-02-08</time></h1>
+        <ul>
+          <li>
+            <details>
+              <summary>#abo 2.5h</summary>
+              <p><time datetime="PT3600S">1h</time> ahoj</p>
+              <p><time datetime="PT5400S">1.5h</time> druhy</p>
+            </details>
+          </li>
+          <li>#barman 50m</li>
+          <li>#poolec 20m</li>
+        </ul>
+      </section>
+
+      <section>
+        <h1><time datetime="2020-02-08">2020-02-07</time></h1>
+        <ul>
+          <li>#abo 2.5h</li>
+          <li>#barman 50m</li>
+          <li>#poolec 20m</li>
+        </ul>
+      </section>
+
+      <noscript>
+        This page doesn't run without Javascript.
+      </noscript>
+    </main>
+  </body>
+</html>
