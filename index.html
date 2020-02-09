@@ -61,8 +61,7 @@ html {
         const date = new Date();
         const rawDuration = event.target.duration.value;
         const duration = parseDuration(rawDuration);
-        const rawDescription = event.target.description.value;
-        const description = rawDescription + `. Raw duration: ${rawDuration}`;
+        const description = event.target.description.value;
         const tags = parseTags(description);
 
         saveEntry({ guid, date, duration, tags, description });
