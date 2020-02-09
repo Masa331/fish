@@ -7,12 +7,12 @@
     <title>Fish</title>
 
     <style type="text/css" media="all">
-      html {
-        box-sizing: border-box;
-      }
-      *, *:before, *:after {
-        box-sizing: inherit;
-      }
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
 
       body {
         margin: 0;
@@ -38,11 +38,16 @@
       // Events
 
       function backup() {
-        console.log('backing up..');
+        const fileName = `fish_backup_${getIso8601Date(new Date())}.json`
+        download(fileName, localStorage.getItem('fishEntries'));
       }
 
       function restore(event) {
-        console.log('restoring..');
+        event.target.files[0].text()
+          .then((result) => {
+            localStorage.setItem('fishEntries', result);
+            rerender();
+          })
       }
 
       function addEntry(event) {
@@ -63,6 +68,19 @@
       window.onload = rerender;
 
       // Private
+
+      function download(filename, text) {
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('download', filename);
+
+        element.style.display = 'none';
+        document.body.appendChild(element);
+
+        element.click();
+
+        document.body.removeChild(element);
+      }
 
       function saveEntry(entry) {
         const newEntries = entries();
@@ -86,15 +104,64 @@
       }
 
       function rerender() {
+        const main = document.getElementsByTagName('main')[0];
+        while (main.lastChild) {
+          main.removeChild(main.lastChild);
+        }
+
         const currentEntries = entries();
         const keyFunction = (item) => { return getIso8601Date(item['date']) };
         const groupedByDate = groupBy(currentEntries, keyFunction)
 
         for (key of Object.keys(groupedByDate)) {
-          const main = document.getElementsByTagName('main')[0];
+          const dateRecords = groupedByDate[key];
+
+          let byTag = {};
+          for (record of dateRecords) {
+            if (record.tags.length > 0) {
+              for (tag of record.tags) {
+                const grouping = byTag[tag] || { totalDuration: 0, records: [] };
+
+                grouping.totalDuration = grouping.totalDuration + record.duration;
+                grouping.records.push(record);
+                byTag[tag] = grouping;
+              }
+            } else {
+              const grouping = byTag['#other'] || { totalDuration: 0, records: [] };
+              grouping.totalDuration = grouping.totalDuration + record.duration;
+              grouping.records.push(record);
+              byTag['#other'] = grouping;
+            }
+          }
+
+
+          const tagComponents = Object.keys(byTag).map((tag) => {
+            const record = byTag[tag];
+
+            const newDay = new TagSummary();
+            const descriptions = record.records.map((i) => {
+              return `<p>${formatDuration(i.duration)} ${i.description}</p>`
+            }).join('');
+
+            newDay.innerHTML =
+              `<span slot="tag-name">${tag}</span>
+               <span slot="duration">${formatDuration(record.totalDuration)}</span>
+               <span slot="records">${descriptions}</span>`
+
+            return newDay;
+          });
+
 
           const newDay = new OneDay();
-          newDay.innerHTML = '<span slot="date">hovno</span>'
+          newDay.innerHTML = `<span slot="date">${getIso8601Date(key)}</span>`
+          const ul = document.createElement('ul');
+          const slotAttr = document.createAttribute('slot');
+          slotAttr.value = 'tags';
+          ul.setAttributeNode(slotAttr);
+          tagComponents.forEach((component) => {
+            ul.appendChild(component);
+          });
+          newDay.appendChild(ul);
           main.appendChild(newDay);
         }
       }
@@ -106,67 +173,92 @@
         });
       }
 
-      // function parseDuration(raw) {
-      //   if (raw.indexOf('s') > -1) {
-      //     const value = raw.match(/\d*/)[0];
-      //     return parseFloat(value);
-      //   } else if (raw.indexOf('m') > -1) {
-      //     const value = raw.match(/\d*/)[0];
-      //     return parseFloat(value) * 60;
-      //   } else if (raw.indexOf('h') > -1) {
-      //     const value = raw.match(/\d*/)[0];
-      //     return parseFloat(value) * 60 * 60;
-      //   } else {
-      //     return null;
-      //   }
-      // }
-      //
-      // function parseTags(raw) {
-      //   return Array.from(raw.matchAll(/#\w*/g));
-      // }
-      //
-      // function groupBy(array, keyFunction) {
-      //   return array.reduce(function(memo, item) {
-      //     const key = keyFunction(item);
-      //
-      //     (memo[key] = memo[key] || []).push(item);
-      //
-      //     return memo;
-      //   }, {});
-      // };
-      //
-      // function getIso8601Date(date) {
-      //   const parsedDate = new Date(date);
-      //   return parsedDate.toISOString().slice(0,10);
-      // }
-      //
-      // class OneDay extends HTMLElement {
-      //   constructor() {
-      //     super();
-      //     const template = document.getElementById('one-day').content;
-      //     const shadowRoot = this.attachShadow({ mode: 'open' })
-      //       .appendChild(template.cloneNode(true));
-      //   }
-      // }
-      // customElements.define('one-day', OneDay);
+      function parseDuration(raw) {
+        if (raw.indexOf('s') > -1) {
+          const value = raw.match(/\d*/)[0];
+          return parseFloat(value);
+        } else if (raw.indexOf('m') > -1) {
+          const value = raw.match(/\d*/)[0];
+          return parseFloat(value) * 60;
+        } else if (raw.indexOf('h') > -1) {
+          const value = raw.match(/\d*/)[0];
+          return parseFloat(value) * 60 * 60;
+        } else {
+          return null;
+        }
+      }
+
+      function parseTags(raw) {
+        return Array.from(raw.matchAll(/#\w*/g));
+      }
+
+      function groupBy(array, keyFunction) {
+        return array.reduce(function(memo, item) {
+          const key = keyFunction(item);
+
+          (memo[key] = memo[key] || []).push(item);
+
+          return memo;
+        }, {});
+      };
+
+      function getIso8601Date(date) {
+        const parsedDate = new Date(date);
+        return parsedDate.toISOString().slice(0,10);
+      }
+
+      function formatDuration(seconds) {
+        if (seconds === null || seconds === undefined) {
+          return '0s';
+        } else if (seconds < 60) {
+          return `${seconds}s`;
+        } else if (seconds >= 60 && seconds < 3600) {
+          return `${Math.round(seconds / 60)}m`;
+        } else if (seconds >= 3600) {
+          return `${parseFloat((seconds / 60 / 60).toFixed(2))}h`;
+        } else {
+          return '0s';
+        }
+      }
+
+      class OneDay extends HTMLElement {
+        constructor() {
+          super();
+          const template = document.getElementById('one-day-template').content;
+          const shadowRoot = this.attachShadow({ mode: 'open' })
+            .appendChild(template.cloneNode(true));
+        }
+      }
+      customElements.define('one-day', OneDay);
+
+      class TagSummary extends HTMLElement {
+        constructor() {
+          super();
+          const template = document.getElementById('tag-summary-template').content;
+          const shadowRoot = this.attachShadow({ mode: 'open' })
+            .appendChild(template.cloneNode(true));
+        }
+      }
+      customElements.define('tag-summary', TagSummary);
     </script>
   </head>
   <body>
     <template id="one-day-template">
       <section>
         <h1><slot name="date">date</slot></h1>
-        <ul>
-          <li>
-            <details>
-              <summary>#abo 2.5h</summary>
-              <p>1h ahoj</p>
-              <p>1.5h druhy</p>
-            </details>
-          </li>
-          <li>#barman 50m</li>
-          <li>#poolec 20m</li>
-        </ul>
+        <slot name="tags">tags</slot>
       </section>
+    </template>
+    <template id="tag-summary-template">
+      <li>
+        <details>
+          <summary><slot name="tag-name">#abo</slot> <slot name="duration">2.5h</slot></summary>
+          <slot name="records">
+            <p>1h ahoj</p>
+            <p>1.5h druhy</p>
+          </slot>
+        </details>
+      </li>
     </template>
 
     <header>
@@ -192,35 +284,10 @@
     </header>
 
     <main>
-      <!-- <one&#45;day></one&#45;day> -->
-
-      <section>
-        <h1><time datetime="2020-02-08">2020-02-08</time></h1>
-        <ul>
-          <li>
-            <details>
-              <summary>#abo 2.5h</summary>
-              <p><time datetime="PT3600S">1h</time> ahoj</p>
-              <p><time datetime="PT5400S">1.5h</time> druhy</p>
-            </details>
-          </li>
-          <li>#barman 50m</li>
-          <li>#poolec 20m</li>
-        </ul>
-      </section>
-
-      <section>
-        <h1><time datetime="2020-02-08">2020-02-07</time></h1>
-        <ul>
-          <li>#abo 2.5h</li>
-          <li>#barman 50m</li>
-          <li>#poolec 20m</li>
-        </ul>
-      </section>
-
-      <noscript>
-        This page doesn't run without Javascript.
-      </noscript>
     </main>
+
+    <noscript>
+      This page doesn't run without Javascript.
+    </noscript>
   </body>
 </html>
