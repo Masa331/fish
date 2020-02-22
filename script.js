@@ -61,8 +61,15 @@ function addEntry(event) {
 }
 
 window.onload = rerender;
+window.setInterval(incrementTimer, 60000);
 
 // Private
+
+function incrementTimer() {
+  const input = document.getElementById('duration');
+  const parsed = parseDuration(input.value);
+  input.value = formatDuration(parsed + 60);
+}
 
 function saveEntry(entry) {
   const newEntries = entries();
@@ -144,7 +151,7 @@ function parseDuration(raw) {
     const value = raw.match(/\d*\.?\d*/)[0];
     return parseFloat(value) * 60 * 60;
   } else {
-    return null;
+    return 0;
   }
 }
 
