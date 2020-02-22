@@ -2,6 +2,23 @@
 
 const STORAGE_KEY = 'fishEntries';
 
+// Javascript standard lib additions
+
+Array.prototype.isEmpty = function() {
+  return this.length === 0;
+}
+
+Object.prototype.map = function(mapFunction) {
+  asArray = Object.entries(this)
+  return asArray.map(([key, value]) => {
+    return mapFunction(key, value);
+  });
+}
+
+Object.prototype.entries = function() {
+  return Object.entries(this);
+}
+
 // Events
 
 function backup() {
@@ -79,59 +96,32 @@ function rerender() {
     main.removeChild(main.lastChild);
   }
 
-  const currentEntries = entries();
-  const keyFunction = (item) => { return iso8601Date(item['date']) };
-  const groupedByDate = groupBy(currentEntries, keyFunction)
-  const inArray = Object.entries(groupedByDate);
-  const sorted = inArray.sort((firstEl, secondEl) => { return secondEl > firstEl });
+  const sortedEntries =
+    groupBy(entries(), (item) => { return iso8601Date(item['date']) })
+    .entries()
+    .sort((firstEl, secondEl) => { return secondEl > firstEl });
 
-  for ([key, dateRecords] of sorted) {
-    let byTag = {};
-    for (record of dateRecords) {
-      if (record.tags.length > 0) {
-        for (tag of record.tags) {
-          const grouping = byTag[tag] || { totalDuration: 0, records: [] };
+  for ([date, records] of sortedEntries) {
+    const byTag = records.reduce((memo, record) => {
+      if (record.tags.isEmpty()) record.tags.push('#other');
 
-          grouping.totalDuration = grouping.totalDuration + record.duration;
-          grouping.records.push(record);
-          byTag[tag] = grouping;
-        }
-      } else {
-        const grouping = byTag['#other'] || { totalDuration: 0, records: [] };
+      for (tag of record.tags) {
+        const grouping = memo[tag] || { totalDuration: 0, records: [] };
+
         grouping.totalDuration = grouping.totalDuration + record.duration;
         grouping.records.push(record);
-        byTag['#other'] = grouping;
-      }
-    }
+        memo[tag] = grouping;
+      };
 
+      return memo;
+    }, {});
 
-    const tagComponents = Object.keys(byTag).map((tag) => {
-      const record = byTag[tag];
-
-      const newDay = new TagSummary();
-      const descriptions = record.records.map((i) => {
-        return `<p>${formatDuration(i.duration)} ${i.description}</p>`
-      }).join('');
-
-      newDay.innerHTML =
-        `<span slot="tag-name">${tag}</span>
-               <span slot="duration">${formatDuration(record.totalDuration)}</span>
-               <span slot="records">${descriptions}</span>`
-
-      return newDay;
+    const tagComponents = byTag.map((tag, group) => {
+      return new TagSummary(tag, group.totalDuration, group.records);
     });
 
+    const newDay = new OneDay(date, tagComponents);
 
-    const newDay = new OneDay();
-    newDay.innerHTML = `<span slot="date">${iso8601Date(key)}</span>`
-    const ul = document.createElement('ul');
-    const slotAttr = document.createAttribute('slot');
-    slotAttr.value = 'tags';
-    ul.setAttributeNode(slotAttr);
-    tagComponents.forEach((component) => {
-      ul.appendChild(component);
-    });
-    newDay.appendChild(ul);
     main.appendChild(newDay);
   }
 }
@@ -163,18 +153,20 @@ function parseTags(raw) {
 }
 
 function groupBy(array, keyFunction) {
-  return array.reduce(function(memo, item) {
+  const reduceFunction = function(memo, item) {
     const key = keyFunction(item);
 
     (memo[key] = memo[key] || []).push(item);
 
     return memo;
-  }, {});
+  }
+
+  return array.reduce(reduceFunction, {});
 };
 
 function iso8601Date(date) {
   const parsedDate = new Date(date);
-  return parsedDate.toISOString().slice(0,10);
+  return parsedDate.toISOString().slice(0, 10);
 }
 
 function formatDuration(seconds) {
@@ -192,19 +184,39 @@ function formatDuration(seconds) {
 }
 
 class OneDay extends HTMLElement {
-  constructor() {
+  constructor(date, tagComponents) {
     super();
     const template = document.getElementById('one-day-template').content;
     this.attachShadow({ mode: 'open' }).appendChild(template.cloneNode(true));
+
+    this.innerHTML = `<span slot="date">${iso8601Date(date)}</span>`
+    const ul = document.createElement('ul');
+    const slotAttr = document.createAttribute('slot');
+    slotAttr.value = 'tags';
+    ul.setAttributeNode(slotAttr);
+    tagComponents.forEach((component) => {
+      ul.appendChild(component);
+    });
+    this.appendChild(ul);
   }
 }
 customElements.define('one-day', OneDay);
 
 class TagSummary extends HTMLElement {
-  constructor() {
+  constructor(tag, totalDuration, records) {
     super();
     const template = document.getElementById('tag-summary-template').content;
     this.attachShadow({ mode: 'open' }).appendChild(template.cloneNode(true));
+
+    const descriptions = records.map((record) => {
+      return `<p>${formatDuration(record.duration)} ${record.description}</p>`
+    }).join('');
+
+    this.innerHTML =
+      `<span slot="tag-name">${tag}</span>
+             <span slot="duration">${formatDuration(totalDuration)}</span>
+             <span slot="records">${descriptions}</span>`
+
   }
 }
 customElements.define('tag-summary', TagSummary);
