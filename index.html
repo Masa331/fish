@@ -29,12 +29,42 @@ html {
         border-bottom: 1px solid lightgrey;
       }
 
+      a {
+        font-size: 0.8rem;
+      }
+
+      a:visited {
+        color: blue;
+      }
+
       .inline-block {
         display: inline-block;
       }
 
-      .margin-left-2rem {
-        margin-left: 2rem;
+      .margin-left-1rem {
+        margin-left: 1rem;
+      }
+
+      .margin-left-3rem {
+        margin-left: 5rem;
+      }
+
+      .link-like {
+        font-family: Monospace;
+        font-size: 0.8rem;
+
+        border: none;
+        background: none;
+        color: blue;
+        text-decoration: underline;
+      }
+
+      .link-like:hover {
+        cursor: pointer;
+      }
+
+      .d-none {
+        display: none;
       }
     </style>
 
@@ -63,25 +93,19 @@ html {
       <nav>
         <h1 class="inline-block">Fish</h1>
 
-        <form class="inline-block margin-left-2rem" onsubmit="addEntry(event)">
-          <label for="duration">Duration</label>
-          <input type="text" id="duration" name="duration">
+        <span class="margin-left-3rem">
+          <button onclick="backup()" class="link-like">backup</button>
+          <label for="restore" class="link-like margin-left-1rem">restore</label>
+          <input type="file" id="restore" name="restore" onchange="restore(event)" class="d-none">
+          <a href="https://jsoneditoronline.org/" class="margin-left-1rem">edit entries</a>
+        <span>
 
-          <label for="duration">Description</label>
-          <input type="text" id="description" name="description">
-          <button type="submit">Add</button>
+        <form class="inline-block margin-left-3rem" onsubmit="addEntry(event)">
+          <input type="text" id="duration" name="duration" placeholder="duration">
+
+          <input type="text" id="description" name="description" placeholder="description">
+          <button type="submit">add entry</button>
         </form>
-
-        <span class="margin-left-2rem">
-          <button onclick="backup()">Backup</button>
-
-          <label for="restore">Restore:</label>
-          <input type="file" id="restore" name="restore" onchange="restore(event)">
-        </span>
-
-        <span class="margin-left-2rem">
-          <a href="https://jsoneditoronline.org/">Edit entries</a>
-        </span>
       </nav>
     </header>
 
