@@ -1,0 +1,59 @@
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Monospace;
+  font-size: 13px;
+}
+
+ul {
+  list-style-type: none;
+}
+
+header nav {
+  border-bottom: 1px solid lightgrey;
+}
+
+a {
+  font-size: 0.8rem;
+}
+
+a:visited {
+  color: blue;
+}
+
+.inline-block {
+  display: inline-block;
+}
+
+.margin-left-1rem {
+  margin-left: 1rem;
+}
+
+.margin-left-3rem {
+  margin-left: 5rem;
+}
+
+.link-like {
+  font-family: Monospace;
+  font-size: 0.8rem;
+
+  border: none;
+  background: none;
+  color: blue;
+  text-decoration: underline;
+}
+
+.link-like:hover {
+  cursor: pointer;
+}
+
+.d-none {
+  display: none;
+}

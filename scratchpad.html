@@ -7,43 +7,9 @@
     <title>Fish</title>
 
     <link href="styles.css" rel="stylesheet">
-    <script type="text/javascript" src="script.js"></script>
   </head>
 
   <body>
-    <template id="fish-week-template">
-      <link href="styles.css" rel="stylesheet">
-
-      <section>
-        <details>
-          <summary>
-            <h1 class="inline-block"><slot name="title">title</slot> ~ <slot name="duration">week total</slot></h1>
-          </summary>
-
-          <slot name="days">days</slot>
-        </details>
-      </section>
-    </template>
-
-    <template id="fish-day-template">
-      <section>
-        <h1><slot name="date">date</slot> ~ <slot name="duration">day total</slot></h1>
-        <slot name="tags">tags</slot>
-      </section>
-    </template>
-
-    <template id="fish-tag-summary-template">
-      <li>
-        <details>
-          <summary><slot name="tag-name">#abo</slot> <slot name="duration">2.5h</slot></summary>
-          <slot name="records">
-            <p>1h ahoj</p>
-            <p>1.5h druhy</p>
-          </slot>
-        </details>
-      </li>
-    </template>
-
     <header>
       <nav>
         <h1 class="inline-block">Fish</h1>
@@ -65,6 +31,16 @@
     </header>
 
     <main>
+      <details>
+        <summary><h1>week 3 ~ 10h</h1></summary>
+
+        <ul>
+          <li>ahoj</li>
+          <li>cau</li>
+        </ul>
+
+      </details>
+
     </main>
 
     <noscript>

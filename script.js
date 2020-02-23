@@ -8,6 +8,18 @@ Array.prototype.isEmpty = function() {
   return this.length === 0;
 }
 
+Array.prototype.groupBy = function(keyFunction) {
+  const reduceFunction = function(memo, item) {
+    const key = keyFunction(item);
+
+    (memo[key] = memo[key] || []).push(item);
+
+    return memo;
+  }
+
+  return this.reduce(reduceFunction, {});
+}
+
 Object.prototype.map = function(mapFunction) {
   asArray = Object.entries(this)
   return asArray.map(([key, value]) => {
@@ -18,6 +30,14 @@ Object.prototype.map = function(mapFunction) {
 Object.prototype.entries = function() {
   return Object.entries(this);
 }
+
+Date.prototype.weekNumber = function() {
+  const d = new Date(Date.UTC(this.getFullYear(), this.getMonth(), this.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1)/7)
+};
 
 // Events
 
@@ -104,11 +124,12 @@ function rerender() {
   }
 
   const sortedEntries =
-    groupBy(entries(), (item) => { return iso8601Date(item['date']) })
+    entries()
+    .groupBy((item) => { return iso8601Date(item['date']) })
     .entries()
     .sort((firstEl, secondEl) => { return secondEl > firstEl });
 
-  for ([date, records] of sortedEntries) {
+  const dayComponents = sortedEntries.map(([date, records]) => {
     const byTag = records.reduce((memo, record) => {
       if (record.tags.isEmpty()) record.tags.push('#other');
 
@@ -124,13 +145,30 @@ function rerender() {
     }, {});
 
     const tagComponents = byTag.map((tag, group) => {
-      return new TagSummary(tag, group.totalDuration, group.records);
+      return new FishTagSummary(tag, group.totalDuration, group.records);
     });
 
     const dayTotal = records.reduce((total, record) => { return total + record.duration }, 0);
-    const newDay = new OneDay(date, dayTotal, tagComponents);
 
-    main.appendChild(newDay);
+    return new FishDay(date, dayTotal, tagComponents);
+  });
+
+  const byWeek = dayComponents.groupBy((day) => {
+    const parsedDate = new Date(day.date);
+    return parsedDate.weekNumber();
+  }).entries();
+
+  const recentWeek = byWeek.pop()[1];
+  for (component of recentWeek) {
+    main.appendChild(component);
+  }
+
+  for ([weekNo, days] of byWeek) {
+    const duration = days.reduce((total, day) => { return total + day.duration; }, 0);
+
+    const week = new FishWeek(weekNo, duration, days);
+
+    main.appendChild(week);
   }
 }
 
@@ -159,18 +197,6 @@ function parseTags(raw) {
   return Array.from(raw.matchAll(/#\w+/g));
 }
 
-function groupBy(array, keyFunction) {
-  const reduceFunction = function(memo, item) {
-    const key = keyFunction(item);
-
-    (memo[key] = memo[key] || []).push(item);
-
-    return memo;
-  }
-
-  return array.reduce(reduceFunction, {});
-};
-
 function iso8601Date(date) {
   const parsedDate = new Date(date);
   return parsedDate.toISOString().slice(0, 10);
@@ -190,13 +216,17 @@ function formatDuration(seconds) {
   }
 }
 
-class OneDay extends HTMLElement {
+class FishDay extends HTMLElement {
   constructor(date, duration, tagComponents) {
     super();
-    const template = document.getElementById('one-day-template').content;
+    this.date = date;
+    this.duration = duration;
+
+    const template = document.getElementById('fish-day-template').content;
     this.attachShadow({ mode: 'open' }).appendChild(template.cloneNode(true));
 
     this.innerHTML = `<span slot="date">${iso8601Date(date)}</span><span slot="duration">${formatDuration(duration)}</span>`
+
     const ul = document.createElement('ul');
     const slotAttr = document.createAttribute('slot');
     slotAttr.value = 'tags';
@@ -207,12 +237,12 @@ class OneDay extends HTMLElement {
     this.appendChild(ul);
   }
 }
-customElements.define('one-day', OneDay);
+customElements.define('fish-day', FishDay);
 
-class TagSummary extends HTMLElement {
+class FishTagSummary extends HTMLElement {
   constructor(tag, totalDuration, records) {
     super();
-    const template = document.getElementById('tag-summary-template').content;
+    const template = document.getElementById('fish-tag-summary-template').content;
     this.attachShadow({ mode: 'open' }).appendChild(template.cloneNode(true));
 
     const descriptions = records.map((record) => {
@@ -226,4 +256,24 @@ class TagSummary extends HTMLElement {
 
   }
 }
-customElements.define('tag-summary', TagSummary);
+customElements.define('fish-tag-summary', FishTagSummary);
+
+class FishWeek extends HTMLElement {
+  constructor(title, duration, days) {
+    super();
+    const template = document.getElementById('fish-week-template').content;
+    this.attachShadow({ mode: 'open' }).appendChild(template.cloneNode(true));
+
+    this.innerHTML = `<span slot="title">week ${title}</span><span slot="duration">${formatDuration(duration)}</span>`;
+
+    const div = document.createElement('div');
+    const slotAttr = document.createAttribute('slot');
+    slotAttr.value = 'days';
+    div.setAttributeNode(slotAttr);
+    days.forEach((component) => {
+      div.appendChild(component);
+    });
+    this.appendChild(div);
+  }
+}
+customElements.define('fish-week', FishWeek);
