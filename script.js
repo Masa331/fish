@@ -127,7 +127,8 @@ function rerender() {
       return new TagSummary(tag, group.totalDuration, group.records);
     });
 
-    const newDay = new OneDay(date, tagComponents);
+    const dayTotal = records.reduce((total, record) => { return total + record.duration }, 0);
+    const newDay = new OneDay(date, dayTotal, tagComponents);
 
     main.appendChild(newDay);
   }
@@ -190,12 +191,12 @@ function formatDuration(seconds) {
 }
 
 class OneDay extends HTMLElement {
-  constructor(date, tagComponents) {
+  constructor(date, duration, tagComponents) {
     super();
     const template = document.getElementById('one-day-template').content;
     this.attachShadow({ mode: 'open' }).appendChild(template.cloneNode(true));
 
-    this.innerHTML = `<span slot="date">${iso8601Date(date)}</span>`
+    this.innerHTML = `<span slot="date">${iso8601Date(date)}</span><span slot="duration">${formatDuration(duration)}</span>`
     const ul = document.createElement('ul');
     const slotAttr = document.createAttribute('slot');
     slotAttr.value = 'tags';
