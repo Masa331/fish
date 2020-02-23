@@ -141,15 +141,14 @@ function uuidv4() {
 }
 
 function parseDuration(raw) {
-  if (raw.indexOf('s') > -1) {
-    const value = raw.match(/\d*\.?\d*/)[0];
-    return parseFloat(value);
-  } else if (raw.indexOf('m') > -1) {
-    const value = raw.match(/\d*\.?\d*/)[0];
-    return parseFloat(value) * 60;
-  } else if (raw.indexOf('h') > -1) {
-    const value = raw.match(/\d*\.?\d*/)[0];
-    return parseFloat(value) * 60 * 60;
+  const number = parseFloat(raw.match(/\d*\.?\d*/)[0] || 0);
+
+  if (raw.includes('s')) {
+    return number;
+  } else if (raw.includes('m')) {
+    return number * 60;
+  } else if (raw.includes('h')) {
+    return number * 60 * 60;
   } else {
     return 0;
   }
