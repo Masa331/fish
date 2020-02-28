@@ -121,6 +121,10 @@ function clearEntries() {
   rerender();
 }
 
+function totalDuration(total, record) {
+  return total + record.duration;
+}
+
 function rerender() {
   const main = document.getElementsByTagName('main')[0];
   while (main.lastChild) {
@@ -138,9 +142,8 @@ function rerender() {
       if (record.tags.isEmpty()) record.tags.push('#other');
 
       for (tag of record.tags) {
-        const grouping = memo[tag] || { totalDuration: 0, records: [] };
+        const grouping = memo[tag] || { records: [] };
 
-        grouping.totalDuration = grouping.totalDuration + record.duration;
         grouping.records.push(record);
         memo[tag] = grouping;
       };
@@ -149,12 +152,12 @@ function rerender() {
     }, {});
 
     const tagComponents = byTag.map((tag, group) => {
-      return new FishTagSummary(tag, group.totalDuration, group.records);
+      const duration = group.records.reduce(totalDuration, 0);
+      return new FishTagSummary(tag, duration, group.records);
     });
 
-    const dayTotal = records.reduce((total, record) => { return total + record.duration }, 0);
-
-    return new FishDay(date, dayTotal, tagComponents);
+    const duration = records.reduce(totalDuration, 0);
+    return new FishDay(date, duration, tagComponents);
   });
 
   const byWeek = dayComponents.groupBy((day) => {
@@ -168,8 +171,7 @@ function rerender() {
   }
 
   for ([weekNo, days] of byWeek) {
-    const duration = days.reduce((total, day) => { return total + day.duration; }, 0);
-
+    const duration = days.reduce(totalDuration, 0);
     const week = new FishWeek(weekNo, duration, days);
 
     main.appendChild(week);
