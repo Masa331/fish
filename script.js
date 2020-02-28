@@ -162,9 +162,9 @@ function rerender() {
   const byWeek = dayComponents.groupBy((day) => {
     const parsedDate = new Date(day.date);
     return parsedDate.weekNumber();
-  }).entries();
+  }).entries().sort(([weekNo, _records]) => weekNo);
 
-  const recentWeek = byWeek.pop()[1];
+  const recentWeek = byWeek.shift()[1];
   for (component of recentWeek) {
     main.appendChild(component);
   }
