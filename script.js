@@ -1,6 +1,7 @@
 // Config
 
 const STORAGE_KEY = 'fishEntries';
+const MINUTE = 60000;
 
 // Javascript standard lib additions
 
@@ -80,8 +81,13 @@ function addEntry(event) {
   rerender();
 }
 
-window.onload = rerender;
-window.setInterval(incrementTimer, 60000);
+function main() {
+  rerender();
+  const timer = new interval(MINUTE, incrementTimer);
+  timer.run();
+}
+
+window.onload = main;
 
 // Private
 
@@ -213,6 +219,34 @@ function formatDuration(seconds) {
     return `${parseFloat((seconds / 60 / 60).toFixed(2))}h`;
   } else {
     return '0s';
+  }
+}
+
+// https://gist.github.com/manast/1185904
+function interval(duration, fn) {
+  this.baseline = undefined;
+
+  this.run = function() {
+    if(this.baseline === undefined) {
+      this.baseline = new Date().getTime();
+    }
+    fn();
+    var end = new Date().getTime();
+    this.baseline += duration;
+
+    var nextTick = duration - (end - this.baseline);
+    if(nextTick < 0) {
+      nextTick = 0;
+    }
+    (function(i) {
+      i.timer = setTimeout(function(){
+        i.run(end);
+      }, nextTick)
+    }(this));
+  }
+
+  this.stop = function() {
+    clearTimeout(this.timer);
   }
 }
 
