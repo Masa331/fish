@@ -28,6 +28,10 @@ a:visited {
   color: blue;
 }
 
+#description {
+  width: 600px;
+}
+
 .inline-block {
   display: inline-block;
 }
