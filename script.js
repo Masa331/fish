@@ -81,13 +81,11 @@ function addEntry(event) {
   rerender();
 }
 
-function main() {
+window.onload = function() {
   rerender();
   const timer = new interval(MINUTE, incrementTimer);
   timer.run();
-}
-
-window.onload = main;
+};
 
 // Private
 
