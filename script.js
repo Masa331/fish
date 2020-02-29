@@ -308,7 +308,7 @@ class FishWeek extends HTMLElement {
     const joined =
       durationByTag.entries()
       .sort((duration1, duration2) => duration1 > duration1)
-      .map(([tag, dduration]) => [tag, formatDuration(dduration)].join(' '))
+      .map(([tag, dduration]) => [tag, formatDuration(dduration)].join(' ~ '))
       .join(', ');
 
     this.innerHTML = `
