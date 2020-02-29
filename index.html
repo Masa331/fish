@@ -72,7 +72,7 @@
         <span>
 
         <form class="inline-block margin-left-3rem" onsubmit="addEntry(event)">
-          <input type="text" id="duration" name="duration" placeholder="duration">
+          <input type="text" id="duration" name="duration" placeholder="duration" oninput="updateTimerStart(event)">
 
           <input type="text" id="description" name="description" placeholder="description">
           <button type="submit">add entry</button>

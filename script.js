@@ -1,7 +1,9 @@
-// Config
+// Config & Globals
 
 const STORAGE_KEY = 'fishEntries';
 const MINUTE = 60000;
+const MS_PER_SECOND = 1000;
+let TIMER_START = new Date();
 
 // Javascript standard lib additions
 
@@ -77,21 +79,31 @@ function addEntry(event) {
   saveEntry({ guid, date, duration, tags, description });
   descriptionInput.value = '';
   durationInput.value = '';
+  TIMER_START = new Date();
   rerender();
+}
+
+function updateTimerStart(event) {
+  const rawDuration = event.target.value;
+  const durationInSeconds = parseDuration(rawDuration);
+  const newTimerStart = new Date(new Date() - durationInSeconds * MS_PER_SECOND);
+
+  TIMER_START = newTimerStart;
 }
 
 window.onload = function() {
   rerender();
-  const timer = new interval(MINUTE, incrementTimer);
-  timer.run();
+  setInterval(incrementTimer, MINUTE);
 };
 
 // Private
 
 function incrementTimer() {
+  const currentDate = new Date();
+  const difference = currentDate - TIMER_START;
+
   const input = document.getElementById('duration');
-  const parsed = parseDuration(input.value);
-  input.value = formatDuration(parsed + 60);
+  input.value = formatDuration(difference / MS_PER_SECOND);
 }
 
 function saveEntry(entry) {
@@ -232,34 +244,6 @@ function formatDuration(seconds) {
     return `${parseFloat((seconds / 60 / 60).toFixed(2))}h`;
   } else {
     return '0s';
-  }
-}
-
-// https://gist.github.com/manast/1185904
-function interval(duration, fn) {
-  this.baseline = undefined;
-
-  this.run = function() {
-    if(this.baseline === undefined) {
-      this.baseline = new Date().getTime();
-    }
-    fn();
-    var end = new Date().getTime();
-    this.baseline += duration;
-
-    var nextTick = duration - (end - this.baseline);
-    if(nextTick < 0) {
-      nextTick = 0;
-    }
-    (function(i) {
-      i.timer = setTimeout(function(){
-        i.run(end);
-      }, nextTick)
-    }(this));
-  }
-
-  this.stop = function() {
-    clearTimeout(this.timer);
   }
 }
 
