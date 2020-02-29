@@ -28,13 +28,17 @@
     </template>
 
     <template id="fish-day-template">
+      <link href="styles.css" rel="stylesheet">
+
       <section>
-        <h1><slot name="date">date</slot> ~ <slot name="duration">day total</slot></h1>
+        <h2><slot name="date">date</slot> ~ <slot name="duration">day total</slot></h2>
         <slot name="tags">tags</slot>
       </section>
     </template>
 
     <template id="fish-tag-summary-template">
+      <link href="styles.css" rel="stylesheet">
+
       <li>
         <details>
           <summary><slot name="tag-name">#abo</slot> <slot name="duration">2.5h</slot></summary>
@@ -66,6 +70,7 @@
       </nav>
     </header>
 
+    <h1>current week</h1>
     <main>
     </main>
 

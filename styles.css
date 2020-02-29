@@ -1,5 +1,6 @@
 html {
   box-sizing: border-box;
+  font-size: 12px;
 }
 *, *:before, *:after {
   box-sizing: inherit;
@@ -7,9 +8,8 @@ html {
 
 body {
   margin: 0;
-  padding: 0;
+  padding: 0px 10px 0px 10px;
   font-family: Monospace;
-  font-size: 13px;
 }
 
 ul {
@@ -20,8 +20,12 @@ header nav {
   border-bottom: 1px solid lightgrey;
 }
 
-a {
-  font-size: 0.8rem;
+h1 {
+  font-size: 1.8rem;
+}
+
+h2 {
+  font-size: 1.3rem;
 }
 
 a:visited {
@@ -46,12 +50,13 @@ a:visited {
 
 .link-like {
   font-family: Monospace;
-  font-size: 0.8rem;
+  font-size: 1rem;
 
   border: none;
   background: none;
   color: blue;
   text-decoration: underline;
+  padding: 0px;
 }
 
 .link-like:hover {
