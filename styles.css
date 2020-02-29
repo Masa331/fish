@@ -32,6 +32,18 @@ a:visited {
   color: blue;
 }
 
+article {
+  border-left: 1px black dotted;
+  /* margin: 10px; */
+  padding-left: 10px;
+}
+
+#grid {
+  display: grid;
+  grid-template-columns: 800px 600px;
+  padding-top: 10px;
+}
+
 #description {
   width: 600px;
 }

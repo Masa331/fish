@@ -27,6 +27,16 @@
       </section>
     </template>
 
+    <template id="fish-current-week-template">
+      <link href="styles.css" rel="stylesheet">
+
+      <section>
+        <h1 class="inline-block"><slot name="title">title</slot> ~ <slot name="duration">week total</slot></h1>
+
+        <slot name="days">days</slot>
+      </section>
+    </template>
+
     <template id="fish-day-template">
       <link href="styles.css" rel="stylesheet">
 
@@ -70,12 +80,26 @@
       </nav>
     </header>
 
-    <h1>current week</h1>
-    <main>
-    </main>
+    <div id="grid">
+      <main>
+      </main>
+
+      <article>
+        <h1>What is Fish?</h1>
+        <p>Fish is a grouping time tracker. Entries are grouped by week, day, and also each tag they include.</p>
+        <p>As a tag is considered any word starting with "#", eg. "#fish".</p>
+
+        <p>Duration accepts a number immediately followed by "s", "m", or "h" denoting a unit eg. "35m" or "1.5h". Numbers without a unit are considered minutes.</p>
+        <p>Duration is automatically incremented each minute.</p>
+
+        <p>Data are stored locally on your computer so synchronization across many devices has to be done manually.</p>
+
+        <p>Created by <a href="https://github.com/Masa331">Masa331</a>. Source available <a href="https://github.com/Masa331/fish">here</a> under MIT.</p>
+      </article>
+    </div>
 
     <noscript>
-      This page doesn't run without Javascript.
+      Fish doesn't run without Javascript. Only scripts Fish loads are it's own, it doesn't use any tracking and doesn't do any external requests. Source code can be inspected <a href="https://github.com/Masa331/fish">here</a>.
     </noscript>
   </body>
 </html>

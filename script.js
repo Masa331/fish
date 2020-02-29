@@ -178,10 +178,10 @@ function rerender() {
     return parsedDate.weekNumber();
   }).entries().sort(([weekNo, _records]) => weekNo);
 
-  const recentWeek = byWeek.shift()[1];
-  for (component of recentWeek) {
-    main.appendChild(component);
-  }
+  const [currentWeekNo, currentWeekDays] = byWeek.shift();
+  const duration = currentWeekDays.reduce(totalDuration, 0);
+  const currentWeek = new FishCurrentWeek(currentWeekNo, duration, currentWeekDays);
+  main.appendChild(currentWeek);
 
   for ([weekNo, days] of byWeek) {
     const duration = days.reduce(totalDuration, 0);
@@ -207,8 +207,8 @@ function parseDuration(raw) {
     return number * 60;
   } else if (raw.includes('h')) {
     return number * 60 * 60;
-  } else {
-    return 0;
+  } else { // considering it minutes
+    return number * 60;
   }
 }
 
@@ -344,3 +344,26 @@ class FishWeek extends HTMLElement {
   }
 }
 customElements.define('fish-week', FishWeek);
+
+class FishCurrentWeek extends HTMLElement {
+  constructor(title, duration, days) {
+    super();
+    const template = document.getElementById('fish-current-week-template').content;
+    this.attachShadow({ mode: 'open' }).appendChild(template.cloneNode(true));
+
+    this.innerHTML = `
+      <span slot="title">current week</span>
+      <span slot="duration">${formatDuration(duration)}</span>
+      `;
+
+    const div = document.createElement('div');
+    const slotAttr = document.createAttribute('slot');
+    slotAttr.value = 'days';
+    div.setAttributeNode(slotAttr);
+    days.forEach((component) => {
+      div.appendChild(component);
+    });
+    this.appendChild(div);
+  }
+}
+customElements.define('fish-current-week', FishCurrentWeek);
