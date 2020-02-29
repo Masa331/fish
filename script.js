@@ -21,15 +21,14 @@ Array.prototype.groupBy = function(keyFunction) {
   return this.reduce(reduceFunction, {});
 }
 
-Object.prototype.map = function(mapFunction) {
-  asArray = Object.entries(this)
-  return asArray.map(([key, value]) => {
-    return mapFunction(key, value);
-  });
-}
-
 Object.prototype.entries = function() {
   return Object.entries(this);
+}
+
+Object.prototype.map = function(mapFunction) {
+  return this.entries().map(([key, value]) => {
+    return mapFunction(key, value);
+  });
 }
 
 Date.prototype.weekNumber = function() {
@@ -123,6 +122,20 @@ function clearEntries() {
 
 function totalDuration(total, record) {
   return total + record.duration;
+}
+
+function totalByTag(records) {
+  const byTag = records.reduce((memo, record) => {
+    if (record.tags.isEmpty()) record.tags.push('#other');
+
+    for (tag of record.tags) {
+      memo[tag] = (memo[tag] || 0) + record.duration;
+    };
+
+    return memo;
+  }, {});
+
+  return byTag;
 }
 
 function rerender() {
@@ -250,11 +263,34 @@ function interval(duration, fn) {
   }
 }
 
+class FishTagSummary extends HTMLElement {
+  constructor(tag, duration, records) {
+    super();
+    this.tag = tag;
+    this.duration = duration;
+
+    const template = document.getElementById('fish-tag-summary-template').content;
+    this.attachShadow({ mode: 'open' }).appendChild(template.cloneNode(true));
+
+    const descriptions = records.map((record) => {
+      return `<p>${formatDuration(record.duration)} ${record.description}</p>`
+    }).join('');
+
+    this.innerHTML =
+      `<span slot="tag-name">${tag}</span>
+             <span slot="duration">${formatDuration(duration)}</span>
+             <span slot="records">${descriptions}</span>`
+
+  }
+}
+customElements.define('fish-tag-summary', FishTagSummary);
+
 class FishDay extends HTMLElement {
   constructor(date, duration, tagComponents) {
     super();
     this.date = date;
     this.duration = duration;
+    this.tags = tagComponents;
 
     const template = document.getElementById('fish-day-template').content;
     this.attachShadow({ mode: 'open' }).appendChild(template.cloneNode(true));
@@ -273,32 +309,29 @@ class FishDay extends HTMLElement {
 }
 customElements.define('fish-day', FishDay);
 
-class FishTagSummary extends HTMLElement {
-  constructor(tag, totalDuration, records) {
-    super();
-    const template = document.getElementById('fish-tag-summary-template').content;
-    this.attachShadow({ mode: 'open' }).appendChild(template.cloneNode(true));
-
-    const descriptions = records.map((record) => {
-      return `<p>${formatDuration(record.duration)} ${record.description}</p>`
-    }).join('');
-
-    this.innerHTML =
-      `<span slot="tag-name">${tag}</span>
-             <span slot="duration">${formatDuration(totalDuration)}</span>
-             <span slot="records">${descriptions}</span>`
-
-  }
-}
-customElements.define('fish-tag-summary', FishTagSummary);
-
 class FishWeek extends HTMLElement {
   constructor(title, duration, days) {
     super();
     const template = document.getElementById('fish-week-template').content;
     this.attachShadow({ mode: 'open' }).appendChild(template.cloneNode(true));
 
-    this.innerHTML = `<span slot="title">week ${title}</span><span slot="duration">${formatDuration(duration)}</span>`;
+    const allTags = days.map(day => day.tags).flat();
+    const durationByTag = allTags.reduce((memo, fishTag) => {
+      memo[fishTag.tag] = (memo[fishTag.tag] || 0) + fishTag.duration;
+      return memo;
+    }, {})
+
+    const joined =
+      durationByTag.entries()
+      .sort((duration1, duration2) => duration1 > duration1)
+      .map(([tag, dduration]) => [tag, formatDuration(dduration)].join(' '))
+      .join(', ');
+
+    this.innerHTML = `
+      <span slot="title">week ${title}</span>
+      <span slot="duration">${formatDuration(duration)}</span>
+      <div slot="tagTotals">${joined}</>
+      `;
 
     const div = document.createElement('div');
     const slotAttr = document.createAttribute('slot');
