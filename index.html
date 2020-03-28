@@ -6,18 +6,20 @@
 
     <title>Fish</title>
 
+    <link href="bootstrap.min.css" rel="stylesheet">
     <link href="styles.css" rel="stylesheet">
     <script type="text/javascript" src="script.js"></script>
   </head>
 
   <body>
     <template id="fish-week-template">
+      <link href="bootstrap.min.css" rel="stylesheet">
       <link href="styles.css" rel="stylesheet">
 
       <section>
         <details>
           <summary>
-            <h1 class="inline-block"><slot name="title">title</slot> ~ <slot name="duration">week total</slot></h1>
+            <h1 class="d-inline-block"><slot name="title">title</slot> ~ <slot name="duration">week total</slot></h1>
           </summary>
           <slot name="tagTotals">
           </slot>
@@ -28,16 +30,18 @@
     </template>
 
     <template id="fish-current-week-template">
+      <link href="bootstrap.min.css" rel="stylesheet">
       <link href="styles.css" rel="stylesheet">
 
       <section>
-        <h1 class="inline-block"><slot name="title">title</slot> ~ <slot name="duration">week total</slot></h1>
+        <h1 class="d-inline-block"><slot name="title">title</slot> ~ <slot name="duration">week total</slot></h1>
 
         <slot name="days">days</slot>
       </section>
     </template>
 
     <template id="fish-day-template">
+      <link href="bootstrap.min.css" rel="stylesheet">
       <link href="styles.css" rel="stylesheet">
 
       <section>
@@ -47,35 +51,50 @@
     </template>
 
     <template id="fish-tag-summary-template">
+      <link href="bootstrap.min.css" rel="stylesheet">
       <link href="styles.css" rel="stylesheet">
 
       <li>
         <details>
           <summary><slot name="tag-name">#abo</slot> ~ <slot name="duration">2.5h</slot></summary>
           <slot name="records">
-            <p>1h ahoj</p>
-            <p>1.5h druhy</p>
+          <p>1h ahoj</p>
+          <p>1.5h druhy</p>
           </slot>
         </details>
       </li>
     </template>
 
+    <template id="fish-tag-button-template">
+      <slot name="content"></slot>
+    </template>
+
     <header>
-      <nav>
-        <h1 class="inline-block">Fish</h1>
+      <nav class="navbar navbar-expand-lg align-items-baseline">
+        <span class="navbar-brand">Fish</span>
 
-        <span class="margin-left-3rem">
-          <button onclick="backup()" class="link-like">backup</button>
-          <label for="restore" class="link-like margin-left-1rem">restore</label>
-          <input type="file" id="restore" name="restore" onchange="restore(event)" class="d-none">
-          <a href="https://jsoneditoronline.org/" class="margin-left-1rem">edit entries</a>
-        <span>
+        <ul class="navbar-nav mx-5">
+          <li class="nav-item mx-2">
+            <button onclick="backup()" class="link-like">backup</button>
+          </li>
+          <li class="nav-item mx-2">
+            <label for="restore" class="link-like ml-2">restore</label>
+            <input type="file" id="restore" name="restore" onchange="restore(event)" class="d-none">
+          </li>
+          <li class="nav-item mx-2">
+            <a href="https://jsoneditoronline.org/" class="ml-2">edit entries</a>
+          </li>
+        </ul>
 
-        <form class="inline-block margin-left-3rem" onsubmit="addEntry(event)">
-          <input type="text" id="duration" name="duration" placeholder="duration" oninput="updateTimerStart(event)">
+        <form class="form-inline align-items-baseline mx-5" onsubmit="addEntry(event)">
+          <input type="text" id="duration" class="form-control mx-2" name="duration" placeholder="duration" oninput="updateTimerStart(event)">
 
-          <input type="text" id="description" name="description" placeholder="description">
-          <button type="submit">add entry</button>
+          <div id="description-container" class="form-group flex-column align-items-start mx-2">
+            <input type="text" id="description" class="form-control w-100" name="description" placeholder="description">
+            <small id="tag-buttons"></small>
+          </div>
+
+          <button type="submit" class="btn btn-outline-secondary mx-2">add entry</button>
         </form>
       </nav>
     </header>

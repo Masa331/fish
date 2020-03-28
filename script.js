@@ -23,6 +23,10 @@ Array.prototype.groupBy = function(keyFunction) {
   return this.reduce(reduceFunction, {});
 }
 
+Array.prototype.unique = function() {
+  return [...new Set(this)]
+}
+
 Object.prototype.entries = function() {
   return Object.entries(this);
 }
@@ -91,6 +95,19 @@ function updateTimerStart(event) {
   TIMER_START = newTimerStart;
 }
 
+function toggleTag(tag, event) {
+  event.preventDefault();
+
+  const descriptionInput = document.getElementById('description');
+  const regexp = new RegExp(`\\s?${tag}`);
+
+  if (descriptionInput.value.includes(tag)) {
+    descriptionInput.value = descriptionInput.value.replace(regexp, '');
+  } else {
+    descriptionInput.value = descriptionInput.value + ` ${tag}`
+  }
+}
+
 window.onload = function() {
   rerender();
   setInterval(incrementTimer, MINUTE);
@@ -151,6 +168,31 @@ function totalByTag(records) {
 }
 
 function rerender() {
+  rerenderTagButtons();
+  rerenderHistory();
+}
+
+function rerenderTagButtons() {
+  const tagButtons = document.getElementById('tag-buttons');
+  while (tagButtons.lastChild) {
+    tagButtons.removeChild(tagButtons.lastChild);
+  }
+
+  const sortedByOccurence = entries().map(entry => entry.tags).flat(2).reduce((memo, item) => {
+    const currentValue = memo[item] || 0;
+    memo[item] = currentValue + 1;
+    return memo;
+  }, {})
+  .entries().sort((first, second) => {
+    return second[1] > first[1];
+  }).map(item => item[0] );
+
+  const tagTogglers = new FishTagButton(sortedByOccurence);
+
+  tagButtons.appendChild(tagTogglers);
+}
+
+function rerenderHistory() {
   const main = document.getElementsByTagName('main')[0];
   while (main.lastChild) {
     main.removeChild(main.lastChild);
@@ -351,3 +393,27 @@ class FishCurrentWeek extends HTMLElement {
   }
 }
 customElements.define('fish-current-week', FishCurrentWeek);
+
+class FishTagButton extends HTMLElement {
+  constructor(tags) {
+    super();
+    const template = document.getElementById('fish-tag-button-template').content;
+    this.attachShadow({ mode: 'open' }).appendChild(template.cloneNode(true));
+
+    const span = document.createElement('span');
+    const slotAttr = document.createAttribute('slot');
+    slotAttr.value = 'content';
+    span.setAttributeNode(slotAttr);
+
+    const buttons = tags.map(tag => {
+      return `
+        <button onclick="toggleTag('${tag}', event)" class="link-like">${tag}</button>
+      `;
+    });
+
+    span.innerHTML = buttons.join(' ');
+
+    this.appendChild(span);
+  }
+}
+customElements.define('fish-tag-button', FishTagButton);

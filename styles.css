@@ -22,10 +22,20 @@ header nav {
 
 h1 {
   font-size: 1.8rem;
+  font-weight: 700;
+
+  margin: revert;
 }
 
 h2 {
   font-size: 1.3rem;
+  font-weight: 700;
+
+  margin: revert;
+}
+
+a {
+  text-decoration: underline;
 }
 
 a:visited {
@@ -34,7 +44,6 @@ a:visited {
 
 article {
   border-left: 1px black dotted;
-  /* margin: 10px; */
   padding-left: 10px;
 }
 
@@ -44,20 +53,8 @@ article {
   padding-top: 10px;
 }
 
-#description {
+#description-container {
   width: 600px;
-}
-
-.inline-block {
-  display: inline-block;
-}
-
-.margin-left-1rem {
-  margin-left: 1rem;
-}
-
-.margin-left-3rem {
-  margin-left: 5rem;
 }
 
 .link-like {
@@ -70,11 +67,11 @@ article {
   text-decoration: underline;
   padding: 0px;
 }
-
 .link-like:hover {
   cursor: pointer;
 }
 
-.d-none {
-  display: none;
+.navbar-brand {
+  font-size: 2rem;
+  font-weight: bold;
 }
