@@ -106,6 +106,8 @@ function toggleTag(tag, event) {
   } else {
     descriptionInput.value = descriptionInput.value + ` ${tag}`
   }
+
+  descriptionInput.focus();
 }
 
 window.onload = function() {
@@ -407,7 +409,7 @@ class FishTagButton extends HTMLElement {
 
     const buttons = tags.map(tag => {
       return `
-        <button onclick="toggleTag('${tag}', event)" class="link-like">${tag}</button>
+        <a href="#" onclick="toggleTag('${tag}', event)" class="link-like">${tag}</a>
       `;
     });
 
