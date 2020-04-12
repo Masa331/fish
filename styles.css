@@ -47,6 +47,10 @@ article {
   padding-left: 10px;
 }
 
+#suggestion:not(:empty):before {
+  content: 'Tab to complete: ';
+}
+
 #grid {
   display: grid;
   grid-template-columns: 800px 600px;

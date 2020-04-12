@@ -65,10 +65,6 @@
       </li>
     </template>
 
-    <template id="fish-tag-button-template">
-      <slot name="content"></slot>
-    </template>
-
     <header>
       <nav class="navbar navbar-expand-lg align-items-baseline">
         <span class="navbar-brand">Fish</span>
@@ -90,8 +86,8 @@
           <input type="text" id="duration" class="form-control mx-2" name="duration" placeholder="duration" oninput="updateTimerStart(event)">
 
           <div id="description-container" class="form-group flex-column align-items-start mx-2">
-            <input type="text" id="description" class="form-control w-100" name="description" placeholder="description">
-            <small id="tag-buttons"></small>
+            <input type="text" id="description" class="form-control w-100" name="description" placeholder="description" autocomplete="off" onkeyup="handleDescriptionChange(event)" onkeydown="handleTab(event)">
+            <span id="suggestion" class="form-text"></span>
           </div>
 
           <button type="submit" class="btn btn-outline-secondary mx-2">add entry</button>
@@ -120,6 +116,5 @@
         </noscript>
       </article>
     </div>
-
   </body>
 </html>

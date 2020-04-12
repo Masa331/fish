@@ -3,12 +3,17 @@
 const STORAGE_KEY = 'fishEntries';
 const MINUTE = 60000;
 const MS_PER_SECOND = 1000;
+const TABKEY = 9;
 let TIMER_START = new Date();
 
 // Javascript standard lib additions
 
 Array.prototype.isEmpty = function() {
   return this.length === 0;
+}
+
+Array.prototype.hasAny = function() {
+  return this.length > 0;
 }
 
 Array.prototype.groupBy = function(keyFunction) {
@@ -95,19 +100,56 @@ function updateTimerStart(event) {
   TIMER_START = newTimerStart;
 }
 
-function toggleTag(tag, event) {
-  event.preventDefault();
+// https://stackoverflow.com/questions/36978192/how-to-get-text-cursor-position-after-keypress-event-happened
+// https://stackoverflow.com/questions/17858174/set-cursor-to-specific-position-on-specific-line-in-a-textarea
+let similarTags = [];
+let descriptionStart;
+let descriptionEnd;
+// let matchStart;
 
-  const descriptionInput = document.getElementById('description');
-  const regexp = new RegExp(`\\s?${tag}`);
+function handleDescriptionChange(event) {
+  const cursorPosition = event.target.selectionStart;
+  const description = event.target.value;
 
-  if (descriptionInput.value.includes(tag)) {
-    descriptionInput.value = descriptionInput.value.replace(regexp, '');
+  const descriptionUntilPosition = description.slice(0, cursorPosition);
+  const match = descriptionUntilPosition.match(/#\w+$/);
+  const suggestionElement = document.getElementById('suggestion');
+
+  const knownTags = tagsByOccurence();
+
+  if (match) {
+    const matchStart = match.index;
+    descriptionStart = description.slice(0, matchStart);
+    descriptionEnd = description.slice(cursorPosition);
+
+    const tagStart = descriptionUntilPosition.slice(match.index, cursorPosition);
+
+    similarTags = knownTags.filter(tag => tag.startsWith(tagStart) && tag !== tagStart);
+
+    suggestionElement.textContent = similarTags.join(' ');
   } else {
-    descriptionInput.value = descriptionInput.value + ` ${tag}`
+    similarTags = [];
+    descriptionStart = null;
+    descriptionEnd = null;
+    matchStart = null;
+    suggestionElement.textContent = '';
   }
+}
 
-  descriptionInput.focus();
+function handleTab(event) {
+  if (event.keyCode === TABKEY) {
+    event.preventDefault();
+
+    if(similarTags.hasAny) {
+      const filledValue = longest_common_starting_substring(similarTags);
+
+      const newValue = descriptionStart + filledValue + descriptionEnd;
+      const newCursorPosition = descriptionStart.length + filledValue.length;
+
+      event.target.value = newValue;
+      event.target.setSelectionRange(newCursorPosition,newCursorPosition);
+    }
+  }
 }
 
 window.onload = function() {
@@ -170,28 +212,19 @@ function totalByTag(records) {
 }
 
 function rerender() {
-  rerenderTagButtons();
   rerenderHistory();
 }
 
-function rerenderTagButtons() {
-  const tagButtons = document.getElementById('tag-buttons');
-  while (tagButtons.lastChild) {
-    tagButtons.removeChild(tagButtons.lastChild);
-  }
-
-  const sortedByOccurence = entries().map(entry => entry.tags).flat(2).reduce((memo, item) => {
+function tagsByOccurence() {
+  const result = entries().map(entry => entry.tags).flat(2).reduce((memo, item) => {
     const currentValue = memo[item] || 0;
     memo[item] = currentValue + 1;
     return memo;
-  }, {})
-  .entries().sort((first, second) => {
+  }, {}).entries().sort((first, second) => {
     return second[1] > first[1];
-  }).map(item => item[0] );
+  }).map(item => item[0]);
 
-  const tagTogglers = new FishTagButton(sortedByOccurence);
-
-  tagButtons.appendChild(tagTogglers);
+  return result;
 }
 
 function rerenderHistory() {
@@ -289,6 +322,17 @@ function formatDuration(seconds) {
   } else {
     return '0s';
   }
+}
+
+// https://www.w3resource.com/javascript-exercises/javascript-array-exercise-28.php
+function longest_common_starting_substring(arr1){
+    const arr= arr1.concat().sort();
+    const a1= arr[0];
+    const a2= arr[arr.length-1];
+    const L= a1.length;
+    let i= 0;
+    while(i< L && a1.charAt(i)=== a2.charAt(i)) i++;
+    return a1.substring(0, i);
 }
 
 class FishTagSummary extends HTMLElement {
@@ -395,27 +439,3 @@ class FishCurrentWeek extends HTMLElement {
   }
 }
 customElements.define('fish-current-week', FishCurrentWeek);
-
-class FishTagButton extends HTMLElement {
-  constructor(tags) {
-    super();
-    const template = document.getElementById('fish-tag-button-template').content;
-    this.attachShadow({ mode: 'open' }).appendChild(template.cloneNode(true));
-
-    const span = document.createElement('span');
-    const slotAttr = document.createAttribute('slot');
-    slotAttr.value = 'content';
-    span.setAttributeNode(slotAttr);
-
-    const buttons = tags.map(tag => {
-      return `
-        <a href="#" onclick="toggleTag('${tag}', event)" class="link-like">${tag}</a>
-      `;
-    });
-
-    span.innerHTML = buttons.join(' ');
-
-    this.appendChild(span);
-  }
-}
-customElements.define('fish-tag-button', FishTagButton);
