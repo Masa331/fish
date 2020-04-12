@@ -4,6 +4,9 @@ const STORAGE_KEY = 'fishEntries';
 const MINUTE = 60000;
 const MS_PER_SECOND = 1000;
 const TABKEY = 9;
+let TAG_SUGGESTIONS = [];
+let DESCRIPTION_START;
+let DESCRIPTION_END;
 let TIMER_START = new Date();
 
 // Javascript standard lib additions
@@ -100,38 +103,27 @@ function updateTimerStart(event) {
   TIMER_START = newTimerStart;
 }
 
-// https://stackoverflow.com/questions/36978192/how-to-get-text-cursor-position-after-keypress-event-happened
-// https://stackoverflow.com/questions/17858174/set-cursor-to-specific-position-on-specific-line-in-a-textarea
-let similarTags = [];
-let descriptionStart;
-let descriptionEnd;
-// let matchStart;
-
 function handleDescriptionChange(event) {
   const cursorPosition = event.target.selectionStart;
   const description = event.target.value;
 
-  const descriptionUntilPosition = description.slice(0, cursorPosition);
-  const match = descriptionUntilPosition.match(/#\w+$/);
+  const descriptionToCursor = description.slice(0, cursorPosition);
+  const match = descriptionToCursor.match(/#\w+$/);
   const suggestionElement = document.getElementById('suggestion');
-
-  const knownTags = tagsByOccurence();
 
   if (match) {
     const matchStart = match.index;
-    descriptionStart = description.slice(0, matchStart);
-    descriptionEnd = description.slice(cursorPosition);
+    DESCRIPTION_START = description.slice(0, matchStart);
+    DESCRIPTION_END = description.slice(cursorPosition);
 
-    const tagStart = descriptionUntilPosition.slice(match.index, cursorPosition);
+    const tagStart = descriptionToCursor.slice(match.index, cursorPosition);
+    TAG_SUGGESTIONS = tagsByOccurence().filter(tag => tag.startsWith(tagStart) && tag !== tagStart);
 
-    similarTags = knownTags.filter(tag => tag.startsWith(tagStart) && tag !== tagStart);
-
-    suggestionElement.textContent = similarTags.join(' ');
+    suggestionElement.textContent = TAG_SUGGESTIONS.join(' ');
   } else {
-    similarTags = [];
-    descriptionStart = null;
-    descriptionEnd = null;
-    matchStart = null;
+    TAG_SUGGESTIONS = [];
+    DESCRIPTION_START = null;
+    DESCRIPTION_END = null;
     suggestionElement.textContent = '';
   }
 }
@@ -140,11 +132,12 @@ function handleTab(event) {
   if (event.keyCode === TABKEY) {
     event.preventDefault();
 
-    if(similarTags.hasAny) {
-      const filledValue = longest_common_starting_substring(similarTags);
+    if(TAG_SUGGESTIONS.hasAny()) {
+      console.log(TAG_SUGGESTIONS);
+      const filledValue = longest_common_starting_substring(TAG_SUGGESTIONS);
 
-      const newValue = descriptionStart + filledValue + descriptionEnd;
-      const newCursorPosition = descriptionStart.length + filledValue.length;
+      const newValue = DESCRIPTION_START + filledValue + DESCRIPTION_END;
+      const newCursorPosition = DESCRIPTION_START.length + filledValue.length;
 
       event.target.value = newValue;
       event.target.setSelectionRange(newCursorPosition,newCursorPosition);
@@ -324,7 +317,6 @@ function formatDuration(seconds) {
   }
 }
 
-// https://www.w3resource.com/javascript-exercises/javascript-array-exercise-28.php
 function longest_common_starting_substring(arr1){
     const arr= arr1.concat().sort();
     const a1= arr[0];
