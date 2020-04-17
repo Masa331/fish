@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>Fish</title>
+
+    <link href="bootstrap.min.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+    <script type="text/javascript" src="js/configs.js"></script>
+    <script type="text/javascript" src="js/standard_lib_additions.js"></script>
+    <script type="text/javascript" src="js/entries.js"></script>
+    <script type="text/javascript" src="js/tools.js"></script>
+  </head>
+
+  <body>
+    <header>
+      <nav class="navbar navbar-expand-lg">
+        <span class="navbar-brand">Fish</span>
+
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a href="index.html" class="nav-link">timer</a>
+          </li>
+          <li class="nav-item">
+            <a href="analytics.html" class="nav-link">analytics</a>
+          </li>
+          <li class="nav-item">
+            <a href="tools.html" class="nav-link">» tools</a>
+          </li>
+          <li class="nav-item">
+            <a href="about.html" class="nav-link">about</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="container-fluid">
+      <div class="row">
+        <div class="col-xl-4 col-lg-6 col-md-8 col-sm-10">
+          <h2>Export entries to JSON</h2>
+          <p>This will export raw time entries as they are saved on your computer.</p>
+          <button onclick="backup()" class="btn btn-outline-secondary">export</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-xl-4 col-lg-6 col-md-8 col-sm-10">
+          <h2>Restore from JSON</h2>
+          <p>This will restore entries from JSON. It expects the same format you get from export.</p>
+          <div class="form-group">
+            <label for="restore" class="sr-only">restore</label>
+            <input type="file" id="restore" name="restore" onchange="restore(event)" class="form-control-file">
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-xl-4 col-lg-6 col-md-8 col-sm-10">
+          <h2>Edit entries</h2>
+          <p>Fish currently doesn't have it's own entries editor. I suggest looking at great <a href="https://jsoneditoronline.org/">JSON Editor online</a>.</p>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

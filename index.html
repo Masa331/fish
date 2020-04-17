@@ -8,113 +8,55 @@
 
     <link href="bootstrap.min.css" rel="stylesheet">
     <link href="styles.css" rel="stylesheet">
-    <script type="text/javascript" src="script.js"></script>
+
+    <script type="text/javascript" src="js/configs.js"></script>
+    <script type="text/javascript" src="js/standard_lib_additions.js"></script>
+    <script type="text/javascript" src="js/entries.js"></script>
+    <script type="text/javascript" src="js/timer.js"></script>
   </head>
 
   <body>
-    <template id="fish-week-template">
-      <link href="bootstrap.min.css" rel="stylesheet">
-      <link href="styles.css" rel="stylesheet">
-
-      <section>
-        <details>
-          <summary>
-            <h1 class="d-inline-block"><slot name="title">title</slot> ~ <slot name="duration">week total</slot></h1>
-          </summary>
-          <slot name="tagTotals">
-          </slot>
-
-          <slot name="days">days</slot>
-        </details>
-      </section>
-    </template>
-
-    <template id="fish-current-week-template">
-      <link href="bootstrap.min.css" rel="stylesheet">
-      <link href="styles.css" rel="stylesheet">
-
-      <section>
-        <h1 class="d-inline-block"><slot name="title">title</slot> ~ <slot name="duration">week total</slot></h1>
-
-        <slot name="days">days</slot>
-      </section>
-    </template>
-
-    <template id="fish-day-template">
-      <link href="bootstrap.min.css" rel="stylesheet">
-      <link href="styles.css" rel="stylesheet">
-
-      <section>
-        <h2><slot name="date">date</slot> ~ <slot name="duration">day total</slot></h2>
-        <slot name="tags">tags</slot>
-      </section>
-    </template>
-
-    <template id="fish-tag-summary-template">
-      <link href="bootstrap.min.css" rel="stylesheet">
-      <link href="styles.css" rel="stylesheet">
-
-      <li>
-        <details>
-          <summary><slot name="tag-name">#abo</slot> ~ <slot name="duration">2.5h</slot></summary>
-          <slot name="records">
-          <p>1h ahoj</p>
-          <p>1.5h druhy</p>
-          </slot>
-        </details>
-      </li>
-    </template>
-
     <header>
-      <nav class="navbar navbar-expand-lg align-items-baseline">
+      <nav class="navbar navbar-expand-lg">
         <span class="navbar-brand">Fish</span>
 
-        <ul class="navbar-nav mx-5">
-          <li class="nav-item mx-2">
-            <button onclick="backup()" class="link-like">backup</button>
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a href="index.html" class="nav-link">» timer</a>
           </li>
-          <li class="nav-item mx-2">
-            <label for="restore" class="link-like ml-2">restore</label>
-            <input type="file" id="restore" name="restore" onchange="restore(event)" class="d-none">
+          <li class="nav-item">
+            <a href="analytics.html" class="nav-link">analytics</a>
           </li>
-          <li class="nav-item mx-2">
-            <a href="https://jsoneditoronline.org/" class="ml-2">edit entries</a>
+          <li class="nav-item">
+            <a href="tools.html" class="nav-link">tools</a>
+          </li>
+          <li class="nav-item">
+            <a href="about.html" class="nav-link">about</a>
           </li>
         </ul>
 
-        <form class="form-inline align-items-baseline mx-5" onsubmit="addEntry(event)">
-          <input type="text" id="duration" class="form-control mx-2" name="duration" placeholder="duration" oninput="updateTimerStart(event)">
-
-          <div id="description-container" class="form-group flex-column align-items-start mx-2">
-            <input type="text" id="description" class="form-control w-100" name="description" placeholder="description" autocomplete="off" onkeyup="handleDescriptionChange(event)" onkeydown="handleTab(event)">
-            <span id="suggestion" class="form-text"></span>
-          </div>
-
-          <button type="submit" class="btn btn-outline-secondary mx-2">add entry</button>
-        </form>
       </nav>
     </header>
 
-    <div id="grid">
-      <main>
-      </main>
+    <main class="container-fluid">
+      <div class="row mt-3">
+        <div class="col-xl-4 col-lg-6 col-md-8 col-sm-10">
+          <form class="form" onsubmit="addEntry(event)">
+            <div class="form-group">
+              <label for="duration">duration</label>
+              <input type="text" id="duration" class="form-control w-auto" name="duration" placeholder="duration" oninput="updateTimerStart(event)" value="0s">
+            </div>
 
-      <article>
-        <h1>What is Fish?</h1>
-        <p>Fish is a grouping time tracker. Entries are grouped by week, day, and also each tag they include.</p>
-        <p>As a tag is considered any word starting with "#", eg. "#fish".</p>
+            <div class="form-group">
+              <label for="description">activity</label>
+              <input type="text" id="description" class="form-control" name="description" placeholder="what are you doing and #tags" autocomplete="off" onkeyup="handleDescriptionChange(event)" onkeydown="handleTab(event)">
+              <span id="suggestion" class="form-text"></span>
+            </div>
 
-        <p>Duration accepts a number immediately followed by "s", "m", or "h" denoting a unit eg. "35m" or "1.5h". Numbers without a unit are considered minutes.</p>
-        <p>Duration is automatically incremented each minute.</p>
-
-        <p>Data are stored locally on your computer so synchronization across many devices has to be done manually.</p>
-
-        <p>Created by <a href="https://github.com/Masa331">Masa331</a>. Source available <a href="https://github.com/Masa331/fish">here</a> under MIT.</p>
-
-        <noscript>
-          <p><strong>Fish doesn't run without Javascript. Only scripts Fish loads are it's own, it doesn't use any tracking and doesn't do any external requests. Source code can be inspected <a href="https://github.com/Masa331/fish">here</a>.</strong></p>
-        </noscript>
-      </article>
-    </div>
+            <button type="submit" class="btn btn-outline-secondary">submit entry</button>
+          </form>
+        </div>
+      </div>
+    </main>
   </body>
 </html>

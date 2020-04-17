@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>Fish</title>
+
+    <link href="bootstrap.min.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+
+    <script type="text/javascript" src="js/configs.js"></script>
+    <script type="text/javascript" src="js/standard_lib_additions.js"></script>
+    <script type="text/javascript" src="js/entries.js"></script>
+    <script type="text/javascript" src="js/analytics.js"></script>
+  </head>
+
+  <body>
+    <header>
+      <nav class="navbar navbar-expand-lg">
+        <span class="navbar-brand">Fish</span>
+
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a href="index.html" class="nav-link">timer</a>
+          </li>
+          <li class="nav-item">
+            <a href="analytics.html" class="nav-link">» analytics</a>
+          </li>
+          <li class="nav-item">
+            <a href="tools.html" class="nav-link">tools</a>
+          </li>
+          <li class="nav-item">
+            <a href="about.html" class="nav-link">about</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <main>
+    </main>
+
+    <template id="fish-week-template">
+      <link href="bootstrap.min.css" rel="stylesheet">
+      <link href="styles.css" rel="stylesheet">
+
+      <section>
+        <details>
+          <summary>
+            <h1 class="d-inline-block"><slot name="title">title</slot> ~ <slot name="duration">week total</slot></h1>
+          </summary>
+          <slot name="tagTotals">
+          </slot>
+
+          <slot name="days">days</slot>
+        </details>
+      </section>
+    </template>
+
+    <template id="fish-current-week-template">
+      <link href="bootstrap.min.css" rel="stylesheet">
+      <link href="styles.css" rel="stylesheet">
+
+      <section>
+        <h1 class="d-inline-block"><slot name="title">title</slot> ~ <slot name="duration">week total</slot></h1>
+
+        <slot name="days">days</slot>
+      </section>
+    </template>
+
+    <template id="fish-day-template">
+      <link href="bootstrap.min.css" rel="stylesheet">
+      <link href="styles.css" rel="stylesheet">
+
+      <section>
+        <h2><slot name="date">date</slot> ~ <slot name="duration">day total</slot></h2>
+        <slot name="tags">tags</slot>
+      </section>
+    </template>
+
+    <template id="fish-tag-summary-template">
+      <link href="bootstrap.min.css" rel="stylesheet">
+      <link href="styles.css" rel="stylesheet">
+
+      <li>
+        <details>
+          <summary><slot name="tag-name">#abo</slot> ~ <slot name="duration">2.5h</slot></summary>
+          <slot name="records">
+          <p>1h ahoj</p>
+          <p>1.5h druhy</p>
+          </slot>
+        </details>
+      </li>
+    </template>
+  </body>
+</html>

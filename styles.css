@@ -42,55 +42,11 @@ a:visited {
   color: blue;
 }
 
-article {
-  border-left: 1px black dotted;
-  padding-left: 10px;
-}
-
 #suggestion:not(:empty):before {
   content: 'Tab to complete: ';
-}
-
-#grid {
-  display: grid;
-  grid-template-columns: 800px 600px;
-  padding-top: 10px;
-}
-
-#description-container {
-  width: 600px;
-}
-
-.link-like {
-  font-family: Monospace;
-  font-size: 1rem;
-
-  border: none;
-  background: none;
-  color: blue;
-  text-decoration: underline;
-  padding: 0px;
-}
-.link-like:hover {
-  cursor: pointer;
 }
 
 .navbar-brand {
   font-size: 2rem;
   font-weight: bold;
 }
-
-/* .keyboard-key { */
-/*   border: 1px solid #aaa; */
-/*   border-radius: 0.2em; */
-/*   box-shadow: 0.1em 0.1em 0.2em rgba(0,0,0,0.1); */
-/*   background-color: #f9f9f9; */
-/*   background-image: -moz-linear-gradient(top, #eee, #f9f9f9, #eee); */
-/*   background-image: -o-linear-gradient(top, #eee, #f9f9f9, #eee); */
-/*   background-image: -webkit-linear-gradient(top, #eee, #f9f9f9, #eee); */
-/*   background-image: linear-gradient(to bottom, #eee, #f9f9f9, #eee); */
-/*   color: #000; */
-/*   padding: 0.1em 0.3em; */
-/*   font-family: inherit; */
-/*   font-size: 0.85em; */
-/* } */
