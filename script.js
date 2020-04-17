@@ -133,7 +133,6 @@ function handleTab(event) {
     event.preventDefault();
 
     if(TAG_SUGGESTIONS.hasAny()) {
-      console.log(TAG_SUGGESTIONS);
       const filledValue = longest_common_starting_substring(TAG_SUGGESTIONS);
 
       const newValue = DESCRIPTION_START + filledValue + DESCRIPTION_END;
