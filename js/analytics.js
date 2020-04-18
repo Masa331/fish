@@ -1,60 +1,11 @@
 // Events
 
 window.onload = function() {
-  rerender();
+  rerenderHistory();
 };
-
-function entries() {
-  const content = rawEntries();
-
-  if (content) {
-    return JSON.parse(content);
-  } else {
-    return [];
-  }
-}
-
-function rawEntries() {
-  return localStorage.getItem(STORAGE_KEY);
-}
-
-function clearEntries() {
-  localStorage.clear();
-  rerender();
-}
 
 function totalDuration(total, record) {
   return total + record.duration;
-}
-
-function totalByTag(records) {
-  const byTag = records.reduce((memo, record) => {
-    if (record.tags.isEmpty()) record.tags.push('#other');
-
-    for (tag of record.tags) {
-      memo[tag] = (memo[tag] || 0) + record.duration;
-    };
-
-    return memo;
-  }, {});
-
-  return byTag;
-}
-
-function rerender() {
-  rerenderHistory();
-}
-
-function tagsByOccurence() {
-  const result = entries().map(entry => entry.tags).flat(2).reduce((memo, item) => {
-    const currentValue = memo[item] || 0;
-    memo[item] = currentValue + 1;
-    return memo;
-  }, {}).entries().sort((first, second) => {
-    return second[1] > first[1];
-  }).map(item => item[0]);
-
-  return result;
 }
 
 function rerenderHistory() {
@@ -110,31 +61,6 @@ function rerenderHistory() {
   }
 }
 
-function uuidv4() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-}
-
-function parseDuration(raw) {
-  const number = parseFloat(raw.match(/\d*\.?\d*/)[0] || 0);
-
-  if (raw.includes('s')) {
-    return number;
-  } else if (raw.includes('m')) {
-    return number * 60;
-  } else if (raw.includes('h')) {
-    return number * 60 * 60;
-  } else { // considering it minutes
-    return number * 60;
-  }
-}
-
-function parseTags(raw) {
-  return Array.from(raw.matchAll(/#\w+/g));
-}
-
 function formatDuration(seconds) {
   if (seconds === null || seconds === undefined) {
     return '0s';
@@ -147,16 +73,6 @@ function formatDuration(seconds) {
   } else {
     return '0s';
   }
-}
-
-function longest_common_starting_substring(arr1){
-    const arr= arr1.concat().sort();
-    const a1= arr[0];
-    const a2= arr[arr.length-1];
-    const L= a1.length;
-    let i= 0;
-    while(i< L && a1.charAt(i)=== a2.charAt(i)) i++;
-    return a1.substring(0, i);
 }
 
 class FishTagSummary extends HTMLElement {
@@ -219,7 +135,7 @@ class FishWeek extends HTMLElement {
 
     const joined =
       durationByTag.entries()
-      .sort((duration1, duration2) => duration1 > duration1)
+      .sort((duration1, duration2) => duration1[1] < duration2[1])
       .map(([tag, dduration]) => [tag, formatDuration(dduration)].join(' ~ '))
       .join(', ');
 
