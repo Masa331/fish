@@ -1,6 +1,28 @@
 window.onload = function() {
   setInterval(incrementTimer, MINUTE);
+  incrementTimer();
 };
+
+function timerStart() {
+  const rawValue = localStorage.getItem(TIMER_START_STORAGE_KEY);
+
+  if (rawValue) {
+    return new Date(rawValue);
+  } else {
+    const now = new Date();
+    setTimerStart(now);
+    return now;
+  }
+}
+
+function setTimerStart(newStart) {
+  localStorage.setItem(TIMER_START_STORAGE_KEY, newStart);
+}
+
+function isTimerEmpty() {
+  const rawValue = localStorage.getItem(TIMER_START_STORAGE_KEY);
+  return rawValue === null;
+}
 
 function addEntry(event) {
   event.preventDefault();
@@ -17,7 +39,7 @@ function addEntry(event) {
   saveEntry({ guid, date, duration, tags, description });
   descriptionInput.value = '';
   durationInput.value = '';
-  TIMER_START = new Date();
+  setTimerStart(new Date());
 }
 
 function updateTimerStart(event) {
@@ -25,7 +47,7 @@ function updateTimerStart(event) {
   const durationInSeconds = parseDuration(rawDuration);
   const newTimerStart = new Date(new Date() - durationInSeconds * MS_PER_SECOND);
 
-  TIMER_START = newTimerStart;
+  setTimerStart(newTimerStart);
 }
 
 function handleDescriptionChange(event) {
@@ -92,7 +114,7 @@ function tagsByOccurence() {
 
 function incrementTimer() {
   const currentDate = new Date();
-  const difference = currentDate - TIMER_START;
+  const difference = currentDate - timerStart();
 
   const input = document.getElementById('duration');
   input.value = formatDuration(difference / MS_PER_SECOND);
