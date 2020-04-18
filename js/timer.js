@@ -33,13 +33,14 @@ function addEntry(event) {
   const date = new Date();
   const rawDuration = durationInput.value || '0';
   const duration = parseDuration(rawDuration);
-  const description = descriptionInput.value || '#NA';
+  const description = descriptionInput.value || UNSPECIFIED;
   const tags = parseTags(description);
 
   saveEntry({ guid, date, duration, tags, description });
   descriptionInput.value = '';
   durationInput.value = '';
   setTimerStart(new Date());
+  incrementTimer();
 }
 
 function updateTimerStart(event) {
