@@ -15,5 +15,6 @@ function restore(event) {
   event.target.files[0].text()
     .then((content) => {
       localStorage.setItem(STORAGE_KEY, content);
+      alert('Entries were restored.');
     });
 }
