@@ -104,10 +104,13 @@ class FishDay extends HTMLElement {
     this.duration = duration;
     this.tags = tagComponents;
 
+    const parsedDate = new Date(date);
+    const dayName = WEEK_DAY_NAMES[parsedDate.getDay()];
+
     const template = document.getElementById('fish-day-template').content;
     this.attachShadow({ mode: 'open' }).appendChild(template.cloneNode(true));
 
-    this.innerHTML = `<span slot="date">${iso8601Date(date)}</span><span slot="duration">${formatDuration(duration)}</span>`
+    this.innerHTML = `<span slot="date">${iso8601Date(date)} ${dayName}</span><span slot="duration">${formatDuration(duration)}</span>`
 
     const ul = document.createElement('ul');
     const slotAttr = document.createAttribute('slot');
