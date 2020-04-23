@@ -42,9 +42,16 @@
       <div class="row mt-3">
         <div class="col-xl-4 col-lg-6 col-md-8 col-sm-10">
           <form class="form" onsubmit="addEntry(event)">
-            <div class="form-group">
-              <label for="duration">duration</label>
-              <input type="text" id="duration" class="form-control w-auto" name="duration" placeholder="duration" oninput="updateTimerStart(event)">
+            <div class="form-row">
+              <div class="form-group col-auto">
+                <label for="duration">duration</label>
+                <input type="text" id="duration" class="form-control w-auto" name="duration" placeholder="duration" oninput="updateTimerStart(event)">
+              </div>
+
+              <div class="form-group col-auto">
+                <label for="duration">date</label>
+                <input type="date" id="date" class="form-control w-auto" name="date">
+              </div>
             </div>
 
             <div class="form-group">

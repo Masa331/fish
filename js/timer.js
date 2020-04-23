@@ -1,6 +1,7 @@
 window.onload = function() {
   setInterval(incrementTimer, MINUTE);
   incrementTimer();
+  document.getElementById('date').valueAsDate = new Date();
 };
 
 function timerStart() {
@@ -28,9 +29,10 @@ function addEntry(event) {
   event.preventDefault();
   const durationInput = event.target.duration;
   const descriptionInput = event.target.description;
+  const dateInput = event.target.date;
 
   const guid = uuidv4();
-  const date = new Date();
+  const date = dateInput.value ? new Date(dateInput.value) : new Date();
   const rawDuration = durationInput.value || '0';
   const duration = parseDuration(rawDuration);
   const description = descriptionInput.value || UNSPECIFIED;
