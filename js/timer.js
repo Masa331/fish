@@ -58,7 +58,7 @@ function handleDescriptionChange(event) {
   const description = event.target.value;
 
   const descriptionToCursor = description.slice(0, cursorPosition);
-  const match = descriptionToCursor.match(/#\w+$/);
+  const match = descriptionToCursor.match(/[#@^*]\w+$/);
   const suggestionElement = document.getElementById('suggestion');
 
   if (match) {
@@ -152,7 +152,7 @@ function parseDuration(raw) {
 }
 
 function parseTags(raw) {
-  return Array.from(raw.matchAll(/#\w+/g));
+  return Array.from(raw.matchAll(/[#@^*]\w+/g));
 }
 
 function formatDuration(seconds) {
