@@ -2,6 +2,9 @@ window.onload = function() {
   setInterval(incrementTimer, MINUTE);
   incrementTimer();
   document.getElementById('date').valueAsDate = new Date();
+
+  const clearDurationButton = document.getElementById('clearDuration');
+  clearDurationButton.addEventListener('click', clearDuration);
 };
 
 function timerStart() {
@@ -14,6 +17,12 @@ function timerStart() {
     setTimerStart(now);
     return now;
   }
+}
+
+function clearDuration() {
+  const now = new Date();
+  setTimerStart(now);
+  incrementTimer();
 }
 
 function setTimerStart(newStart) {

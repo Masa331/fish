@@ -50,3 +50,15 @@ a:visited {
   font-size: 2rem;
   font-weight: bold;
 }
+
+svg.deleticon {
+  position: absolute;
+  display: block;
+  top: 30px;
+  right: 14px;
+
+  width: 15px;
+  height: 15px;
+
+  fill: grey;
+}
