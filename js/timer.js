@@ -62,12 +62,17 @@ function updateTimerStart(event) {
   setTimerStart(newTimerStart);
 }
 
+function withoutTagChar(str) {
+  return str.replace(/[#@^*]/, '');
+}
+
 function handleDescriptionChange(event) {
   const cursorPosition = event.target.selectionStart;
   const description = event.target.value;
 
   const descriptionToCursor = description.slice(0, cursorPosition);
-  const match = descriptionToCursor.match(/[#@^*]\w+$/);
+  // const match = descriptionToCursor.match(/[#@^*]\w+$/);
+  const match = descriptionToCursor.match(/[#@^*]?\w+$/);
   const suggestionElement = document.getElementById('suggestion');
 
   if (match) {
@@ -76,7 +81,12 @@ function handleDescriptionChange(event) {
     DESCRIPTION_END = description.slice(cursorPosition);
 
     const tagStart = descriptionToCursor.slice(match.index, cursorPosition);
-    TAG_SUGGESTIONS = tagsByOccurence().filter(tag => tag.startsWith(tagStart) && tag !== tagStart);
+    // console.log(tagsByOccurence());
+    if(true) {
+    TAG_SUGGESTIONS = tagsByOccurence().filter(tag => withoutTagChar(tag).startsWith(withoutTagChar(tagStart)) && tag !== tagStart);
+    } else {
+    }
+    console.log(TAG_SUGGESTIONS);
 
     suggestionElement.textContent = TAG_SUGGESTIONS.join(' ');
   } else {
@@ -100,6 +110,7 @@ function handleTab(event) {
       if (TAG_SUGGESTIONS.length === 1) {
         filledValue = `${filledValue} `;
       }
+      console.log(TAG_SUGGESTIONS.length)
 
       const newValue = DESCRIPTION_START + filledValue + DESCRIPTION_END;
       const newCursorPosition = DESCRIPTION_START.length + filledValue.length;
@@ -179,7 +190,8 @@ function formatDuration(seconds) {
 }
 
 function longest_common_starting_substring(arr1){
-    const arr= arr1.concat().sort();
+    const arr= arr1.concat().sort()
+
     const a1= arr[0];
     const a2= arr[arr.length-1];
     const L= a1.length;
