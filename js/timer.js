@@ -62,12 +62,16 @@ function updateTimerStart(event) {
   setTimerStart(newTimerStart);
 }
 
+function withoutTagChar(str) {
+  return str.replace(/[#@^*]/, '');
+}
+
 function handleDescriptionChange(event) {
   const cursorPosition = event.target.selectionStart;
   const description = event.target.value;
 
   const descriptionToCursor = description.slice(0, cursorPosition);
-  const match = descriptionToCursor.match(/[#@^*]\w+$/);
+  const match = descriptionToCursor.match(/[#@^*]?\w+$/);
   const suggestionElement = document.getElementById('suggestion');
 
   if (match) {
@@ -75,11 +79,22 @@ function handleDescriptionChange(event) {
     DESCRIPTION_START = description.slice(0, matchStart);
     DESCRIPTION_END = description.slice(cursorPosition);
 
-    const tagStart = descriptionToCursor.slice(match.index, cursorPosition);
-    TAG_SUGGESTIONS = tagsByOccurence().filter(tag => tag.startsWith(tagStart) && tag !== tagStart);
+
+    CURRENT_WORD = descriptionToCursor.slice(match.index, cursorPosition);
+    if (!TABBING) {
+      STARTING_WORD = CURRENT_WORD;
+    }
+    if(STARTING_WORD.match(/[#@^*]\w*/)) { // starts with tag char
+      TAG_SUGGESTIONS = tagsByOccurence().filter(tag => tag.startsWith(STARTING_WORD) && tag !== STARTING_WORD);
+    } else {
+      TAG_SUGGESTIONS = tagsByOccurence().filter(tag => withoutTagChar(tag).startsWith(withoutTagChar(STARTING_WORD)) && tag !== STARTING_WORD);
+    }
 
     suggestionElement.textContent = TAG_SUGGESTIONS.join(' ');
   } else {
+    TABBING = null;
+    CURRENT_WORD = null;
+    STARTING_WORD = null;
     TAG_SUGGESTIONS = [];
     DESCRIPTION_START = null;
     DESCRIPTION_END = null;
@@ -94,9 +109,15 @@ function handleTab(event) {
 
   if (event.keyCode === TABKEY) {
     event.preventDefault();
+    TABBING = true;
 
     if(TAG_SUGGESTIONS.hasAny()) {
-      let filledValue = longest_common_starting_substring(TAG_SUGGESTIONS);
+      let index = TAG_SUGGESTIONS.indexOf(CURRENT_WORD);
+      if (TAG_SUGGESTIONS.length === index + 1) {
+        index = -1;
+      }
+      let filledValue = TAG_SUGGESTIONS[index + 1];
+
       if (TAG_SUGGESTIONS.length === 1) {
         filledValue = `${filledValue} `;
       }
@@ -105,7 +126,7 @@ function handleTab(event) {
       const newCursorPosition = DESCRIPTION_START.length + filledValue.length;
 
       event.target.value = newValue;
-      event.target.setSelectionRange(newCursorPosition,newCursorPosition);
+      event.target.setSelectionRange(newCursorPosition, newCursorPosition);
     }
   }
 }
@@ -176,14 +197,4 @@ function formatDuration(seconds) {
   } else {
     return '0s';
   }
-}
-
-function longest_common_starting_substring(arr1){
-    const arr= arr1.concat().sort();
-    const a1= arr[0];
-    const a2= arr[arr.length-1];
-    const L= a1.length;
-    let i= 0;
-    while(i< L && a1.charAt(i)=== a2.charAt(i)) i++;
-    return a1.substring(0, i);
 }
