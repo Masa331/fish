@@ -8,9 +8,25 @@ function filter(event) {
   if (event) { event.preventDefault() };
 
   const grouping = document.querySelector("input[name='grouping']:checked").value;
-  const fulltext = document.getElementById("fulltextFilter").value;
+  const fulltext = document.getElementById("fulltext-filter").value;
+  const minDate =  document.getElementById("min-date").value;
+  const maxDate =  document.getElementById("max-date").value;
 
-  const entries = FishEntries.all().filter(entry => entry.description.includes(fulltext));
+  let entries = FishEntries.all()
+  if (fulltext) {
+    entries = entries.filter(entry => entry.description.includes(fulltext));
+  }
+  if (minDate) {
+    const date = new Date(minDate);
+    entries = entries.filter(entry => entry.date > date);
+  }
+  if (maxDate) {
+    const date = new Date(maxDate);
+    date.setHours(23);
+    date.setMinutes(59);
+    date.setSeconds(59);
+    entries = entries.filter(entry => entry.date < date);
+  }
 
   switch (grouping) {
     case 'by-nothing':
