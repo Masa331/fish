@@ -23,3 +23,23 @@ function clearEntries() {
   localStorage.clear();
   rerender();
 }
+
+class FishEntries {
+  static all() {
+    const all = this.raw();
+
+    const parsed = JSON.parse(all)
+      .map(entry => {
+        entry.date = new Date(entry.date);
+        if (entry.tags.isEmpty()) entry.tags.push('#other');
+
+        return entry;
+      });
+
+    return parsed;
+  }
+
+  static raw() {
+    return localStorage.getItem(STORAGE_KEY) || "[]";
+  }
+}

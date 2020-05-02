@@ -24,6 +24,10 @@ Array.prototype.unique = function() {
   return [...new Set(this)]
 }
 
+Array.prototype.first = function() {
+  return this[0];
+}
+
 Object.prototype.entries = function() {
   return Object.entries(this);
 }
@@ -39,8 +43,24 @@ Date.prototype.weekNumber = function() {
   const dayNum = d.getUTCDay() || 7;
   d.setUTCDate(d.getUTCDate() + 4 - dayNum);
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-  return Math.ceil((((d - yearStart) / 86400000) + 1)/7)
+
+  const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1)/7) - 1;
+  return `${yearStart.getFullYear()}${weekNo}`;
 };
+
+Date.prototype.iso8601 = function() {
+  return this.toISOString().slice(0, 10);
+}
+
+Date.prototype.dayName = function() {
+  return WEEK_DAY_NAMES[this.getDay()];
+}
+
+Date.prototype.monthName = function() {
+  const year = this.getFullYear();
+  const month = this.toLocaleString('default', { month: 'long' }).toLowerCase();
+  return `${month} ${year}`;
+}
 
 function iso8601Date(date) {
   const parsedDate = new Date(date);

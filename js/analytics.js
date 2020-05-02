@@ -1,64 +1,247 @@
-// Events
+'use strict';
 
 window.onload = function() {
-  rerenderHistory();
+  filter();
 };
 
-function totalDuration(total, record) {
-  return total + record.duration;
+function filter(event) {
+  if (event) { event.preventDefault() };
+
+  const grouping = document.querySelector("input[name='grouping']:checked").value;
+  const fulltext = document.getElementById("fulltextFilter").value;
+
+  const entries = FishEntries.all().filter(entry => entry.description.includes(fulltext));
+
+  switch (grouping) {
+    case 'by-nothing':
+      groupByNothing(entries);
+      break;
+    case 'by-days':
+      groupByDays(entries);
+      break;
+    case 'by-weeks':
+      groupByWeeks(entries);
+      break;
+    case 'by-months':
+      groupByMonths(entries);
+      break;
+  }
 }
 
-function rerenderHistory() {
-  const main = document.getElementsByTagName('main')[0];
-  while (main.lastChild) {
-    main.removeChild(main.lastChild);
-  }
+function groupByNothing(entries) {
+  const main = document.getElementById('history');
+  while (main.lastChild) { main.removeChild(main.lastChild) };
 
-  const sortedEntries =
-    entries()
-    .groupBy((item) => { return iso8601Date(item['date']) })
-    .entries()
-    .sort((firstEl, secondEl) => { return secondEl > firstEl });
+  let totalDuration = 0;
 
-  const dayComponents = sortedEntries.map(([date, records]) => {
-    const byTag = records.reduce((memo, record) => {
-      if (record.tags.isEmpty()) record.tags.push('#other');
+  const byTag = entries.reduce((memo, record) => {
+    for (const tag of record.tags) {
+      totalDuration += record.duration;
 
-      for (tag of record.tags) {
-        const grouping = memo[tag] || { records: [] };
+      const group = memo[tag] || { tag: tag, duration: 0, descriptions: [] };
 
-        grouping.records.push(record);
-        memo[tag] = grouping;
+      group.duration += record.duration;
+      group.descriptions.push(`${formatDuration(record.duration)} ${record.description}`);
+
+      memo[tag] = group;
+    };
+
+    return memo;
+  }, {}).entries().sort((tag1, tag2) => parseInt(tag2[1].duration) > parseInt(tag1[1].duration));
+
+  const tagComponents = byTag.map(([tag, group]) => {
+    const descriptions = group.descriptions.map(description => `<p>${description}</p>`).join('');
+
+    const markup =
+      `<li>
+        <details>
+          <summary>${tag} ~ ${formatDuration(group.duration)}</summary>
+          ${descriptions}
+        </details>
+      </li>`;
+
+    return markup;
+  }).join('');
+
+  const markup = `
+    <section>
+      <h2>all time ~ ${formatDuration(totalDuration)}</h2>
+      <ul>
+        ${tagComponents}
+      </ul>
+    </section>
+  `
+
+  main.insertAdjacentHTML('beforeend', markup);
+}
+
+function groupByDays(entries) {
+  const main = document.getElementById('history');
+  while (main.lastChild) { main.removeChild(main.lastChild) };
+
+  const groupedAndSorted = entries.groupBy(entry => entry.date.iso8601()).entries()
+      .sort((firstEl, secondEl) => secondEl[0] > firstEl[0]);
+
+  groupedAndSorted.forEach(([isoDate, entries]) => {
+    let totalDayDuration = 0;
+    const date = entries.first().date;
+    const weekDay = date.dayName();
+
+    const byTag = entries.reduce((memo, record) => {
+      for (const tag of record.tags) {
+        totalDayDuration += record.duration;
+
+        const group = memo[tag] || { tag: tag, duration: 0, descriptions: [] };
+
+        group.duration += record.duration;
+        group.descriptions.push(`${formatDuration(record.duration)} ${record.description}`);
+
+        memo[tag] = group;
       };
 
       return memo;
-    }, {});
+    }, {}).entries().sort((tag1, tag2) => parseInt(tag2[1].duration) > parseInt(tag1[1].duration));
 
-    const tagComponents = byTag.map((tag, group) => {
-      const duration = group.records.reduce(totalDuration, 0);
-      return new FishTagSummary(tag, duration, group.records);
-    });
+    const tagComponents = byTag.map(([tag, group]) => {
+      const descriptions = group.descriptions.map(description => `<p>${description}</p>`).join('');
 
-    const duration = records.reduce(totalDuration, 0);
-    return new FishDay(date, duration, tagComponents);
+      const markup =
+        `<li>
+          <details>
+            <summary>${tag} ~ ${formatDuration(group.duration)}</summary>
+            ${descriptions}
+          </details>
+        </li>`;
+
+      return markup;
+    }).join('');
+
+    const markup = `
+      <section>
+        <h2>${isoDate} - ${weekDay} ~ ${formatDuration(totalDayDuration)}</h2>
+        <ul>
+          ${tagComponents}
+        </ul>
+      </section>
+    `
+
+    main.insertAdjacentHTML('beforeend', markup);
   });
+}
 
-  const byWeek = dayComponents.groupBy((day) => {
-    const parsedDate = new Date(day.date);
-    return parsedDate.weekNumber();
-  }).entries().sort(([weekNo, _records]) => weekNo);
+function groupByWeeks(entries) {
+  const main = document.getElementById('history');
+  while (main.lastChild) { main.removeChild(main.lastChild) };
 
-  const [currentWeekNo, currentWeekDays] = byWeek.shift();
-  const duration = currentWeekDays.reduce(totalDuration, 0);
-  const currentWeek = new FishCurrentWeek(currentWeekNo, duration, currentWeekDays);
-  main.appendChild(currentWeek);
+  const groupedAndSorted =
+    entries
+      .groupBy(entry => entry.date.weekNumber()).entries()
+      .sort((firstEl, secondEl) => parseInt(secondEl[0]) > parseInt(firstEl[0]));
 
-  for ([weekNo, days] of byWeek) {
-    const duration = days.reduce(totalDuration, 0);
-    const week = new FishWeek(weekNo, duration, days);
+  groupedAndSorted.forEach(([weekNumber, entries]) => {
+    let totalDayDuration = 0;
+    const date = entries.first().date;
 
-    main.appendChild(week);
-  }
+    const byTag = entries.reduce((memo, record) => {
+      for (const tag of record.tags) {
+        totalDayDuration += record.duration;
+
+        const group = memo[tag] || { tag: tag, duration: 0, descriptions: [] };
+
+        group.duration += record.duration;
+        group.descriptions.push(`${formatDuration(record.duration)} ${record.description}`);
+
+        memo[tag] = group;
+      };
+
+      return memo;
+    }, {}).entries().sort((tag1, tag2) => parseInt(tag2[1].duration) > parseInt(tag1[1].duration));
+
+    const tagComponents = byTag.map(([tag, group]) => {
+      const descriptions = group.descriptions.map(description => `<p>${description}</p>`).join('');
+
+      const markup =
+        `<li>
+          <details>
+            <summary>${tag} ~ ${formatDuration(group.duration)}</summary>
+            ${descriptions}
+          </details>
+        </li>`;
+
+      return markup;
+    }).join('');
+
+    const weekBoundaries = weekBoundaryDates(weekNumber).map(d => d.iso8601()).join(' - ');
+    const markup = `
+      <section>
+        <h2>${weekBoundaries}, week ${weekNumber.slice(4)} ~ ${formatDuration(totalDayDuration)}</h2>
+        <ul>
+          ${tagComponents}
+        </ul>
+      </section>
+    `
+
+    main.insertAdjacentHTML('beforeend', markup);
+  });
+}
+
+function groupByMonths(entries) {
+  const main = document.getElementById('history');
+  while (main.lastChild) { main.removeChild(main.lastChild) };
+
+  const groupedAndSorted =
+    entries
+      .groupBy(entry => entry.date.monthName()).entries()
+      .sort((firstEl, secondEl) => parseInt(secondEl[0]) > parseInt(firstEl[0]));
+
+  groupedAndSorted.forEach(([monthName, entries]) => {
+    let totalDayDuration = 0;
+    const date = entries.first().date;
+
+    const byTag = entries.reduce((memo, record) => {
+      for (const tag of record.tags) {
+        totalDayDuration += record.duration;
+
+        const group = memo[tag] || { tag: tag, duration: 0, descriptions: [] };
+
+        group.duration += record.duration;
+        group.descriptions.push(`${formatDuration(record.duration)} ${record.description}`);
+
+        memo[tag] = group;
+      };
+
+      return memo;
+    }, {}).entries().sort((tag1, tag2) => parseInt(tag2[1].duration) > parseInt(tag1[1].duration));;
+
+    const tagComponents = byTag.map(([tag, group]) => {
+      const descriptions = group.descriptions.map(description => `<p>${description}</p>`).join('');
+
+      const markup =
+        `<li>
+          <details>
+            <summary>${tag} ~ ${formatDuration(group.duration)}</summary>
+            ${descriptions}
+          </details>
+        </li>`;
+
+      return markup;
+    }).join('');
+
+    const markup = `
+      <section>
+        <h2>${monthName} ~ ${formatDuration(totalDayDuration)}</h2>
+        <ul>
+          ${tagComponents}
+        </ul>
+      </section>
+    `
+
+    main.insertAdjacentHTML('beforeend', markup);
+  });
+}
+
+function totalDuration(total, record) {
+  return total + record.duration;
 }
 
 function formatDuration(seconds) {
@@ -75,110 +258,13 @@ function formatDuration(seconds) {
   }
 }
 
-class FishTagSummary extends HTMLElement {
-  constructor(tag, duration, records) {
-    super();
-    this.tag = tag;
-    this.duration = duration;
+function weekBoundaryDates(yearWeek) {
+  var curr = new Date(parseInt(yearWeek.slice(0, 4)), 0, parseInt(yearWeek.slice(4)) * 7);
 
-    const template = document.getElementById('fish-tag-summary-template').content;
-    this.attachShadow({ mode: 'open' }).appendChild(template.cloneNode(true));
+  var first = curr.getDate() - curr.getDay();
+  var last = first + 6;
+  const firstday = new Date(curr.setDate(first + 1));
+  const lastday = new Date(curr.setDate(curr.getDate()+6));
 
-    const descriptions = records.map((record) => {
-      return `<p>${formatDuration(record.duration)} ${record.description}</p>`
-    }).join('');
-
-    this.innerHTML =
-      `<span slot="tag-name">${tag}</span>
-             <span slot="duration">${formatDuration(duration)}</span>
-             <span slot="records">${descriptions}</span>`
-
-  }
+  return [firstday, lastday];
 }
-customElements.define('fish-tag-summary', FishTagSummary);
-
-class FishDay extends HTMLElement {
-  constructor(date, duration, tagComponents) {
-    super();
-    this.date = date;
-    this.duration = duration;
-    this.tags = tagComponents;
-
-    const parsedDate = new Date(date);
-    const dayName = WEEK_DAY_NAMES[parsedDate.getDay()];
-
-    const template = document.getElementById('fish-day-template').content;
-    this.attachShadow({ mode: 'open' }).appendChild(template.cloneNode(true));
-
-    this.innerHTML = `<span slot="date">${iso8601Date(date)} ${dayName}</span><span slot="duration">${formatDuration(duration)}</span>`
-
-    const ul = document.createElement('ul');
-    const slotAttr = document.createAttribute('slot');
-    slotAttr.value = 'tags';
-    ul.setAttributeNode(slotAttr);
-    tagComponents.forEach((component) => {
-      ul.appendChild(component);
-    });
-    this.appendChild(ul);
-  }
-}
-customElements.define('fish-day', FishDay);
-
-class FishWeek extends HTMLElement {
-  constructor(title, duration, days) {
-    super();
-    const template = document.getElementById('fish-week-template').content;
-    this.attachShadow({ mode: 'open' }).appendChild(template.cloneNode(true));
-
-    const allTags = days.map(day => day.tags).flat();
-    const durationByTag = allTags.reduce((memo, fishTag) => {
-      memo[fishTag.tag] = (memo[fishTag.tag] || 0) + fishTag.duration;
-      return memo;
-    }, {})
-
-    const joined =
-      durationByTag.entries()
-      .sort((duration1, duration2) => duration1[1] < duration2[1])
-      .map(([tag, dduration]) => [tag, formatDuration(dduration)].join(' ~ '))
-      .join(', ');
-
-    this.innerHTML = `
-      <span slot="title">week ${title}</span>
-      <span slot="duration">${formatDuration(duration)}</span>
-      <div slot="tagTotals">${joined}</>
-      `;
-
-    const div = document.createElement('div');
-    const slotAttr = document.createAttribute('slot');
-    slotAttr.value = 'days';
-    div.setAttributeNode(slotAttr);
-    days.forEach((component) => {
-      div.appendChild(component);
-    });
-    this.appendChild(div);
-  }
-}
-customElements.define('fish-week', FishWeek);
-
-class FishCurrentWeek extends HTMLElement {
-  constructor(title, duration, days) {
-    super();
-    const template = document.getElementById('fish-current-week-template').content;
-    this.attachShadow({ mode: 'open' }).appendChild(template.cloneNode(true));
-
-    this.innerHTML = `
-      <span slot="title">current week</span>
-      <span slot="duration">${formatDuration(duration)}</span>
-      `;
-
-    const div = document.createElement('div');
-    const slotAttr = document.createAttribute('slot');
-    slotAttr.value = 'days';
-    div.setAttributeNode(slotAttr);
-    days.forEach((component) => {
-      div.appendChild(component);
-    });
-    this.appendChild(div);
-  }
-}
-customElements.define('fish-current-week', FishCurrentWeek);

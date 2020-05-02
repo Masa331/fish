@@ -37,60 +37,47 @@
       </nav>
     </header>
 
-    <main>
+    <main class="container-fluid">
+      <div class="row mt-3">
+        <div class="col-auto">
+          <form class="form" onsubmit="filter(event)">
+            <div class="form-row">
+              <div class="form-group col-auto">
+                <label for="fulltextFilter">fulltext filter</label>
+                <input type="text" class="form-control" id="fulltextFilter" onkeyup="filter(event)">
+              </div>
+
+              <div class="form-group col-auto">
+                <label class="radio control-label">group by</label>
+
+                <div class="mt-2">
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="grouping" id="by-nothing" value="by-nothing" checked onchange="filter(event)">
+                    <label class="form-check-label" for="by-nothing">nothing</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="grouping" id="by-days" value="by-days" checked onchange="filter(event)">
+                    <label class="form-check-label" for="by-days">days</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="grouping" id="by-weeks" value="by-weeks" onchange="filter(event)">
+                    <label class="form-check-label" for="by-weeks">weeks</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="grouping" id="by-months" value="by-months" onchange="filter(event)">
+                    <label class="form-check-label" for="by-months">months</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="row">
+        <div id="history" class="col-auto">
+        </div>
+      </div>
     </main>
-
-    <template id="fish-week-template">
-      <link href="bootstrap.min.css" rel="stylesheet">
-      <link href="styles.css" rel="stylesheet">
-
-      <section>
-        <details>
-          <summary>
-            <h1 class="d-inline-block"><slot name="title">title</slot> ~ <slot name="duration">week total</slot></h1>
-          </summary>
-          <slot name="tagTotals">
-          </slot>
-
-          <slot name="days">days</slot>
-        </details>
-      </section>
-    </template>
-
-    <template id="fish-current-week-template">
-      <link href="bootstrap.min.css" rel="stylesheet">
-      <link href="styles.css" rel="stylesheet">
-
-      <section>
-        <h1 class="d-inline-block"><slot name="title">title</slot> ~ <slot name="duration">week total</slot></h1>
-
-        <slot name="days">days</slot>
-      </section>
-    </template>
-
-    <template id="fish-day-template">
-      <link href="bootstrap.min.css" rel="stylesheet">
-      <link href="styles.css" rel="stylesheet">
-
-      <section>
-        <h2><slot name="date">date</slot> ~ <slot name="duration">day total</slot></h2>
-        <slot name="tags">tags</slot>
-      </section>
-    </template>
-
-    <template id="fish-tag-summary-template">
-      <link href="bootstrap.min.css" rel="stylesheet">
-      <link href="styles.css" rel="stylesheet">
-
-      <li>
-        <details>
-          <summary><slot name="tag-name">#abo</slot> ~ <slot name="duration">2.5h</slot></summary>
-          <slot name="records">
-          <p>1h ahoj</p>
-          <p>1.5h druhy</p>
-          </slot>
-        </details>
-      </li>
-    </template>
   </body>
 </html>

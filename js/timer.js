@@ -182,7 +182,7 @@ function parseDuration(raw) {
 }
 
 function parseTags(raw) {
-  return Array.from(raw.matchAll(/[#@^*]\w+/g));
+  return raw.match(/[#@^*]\w+/g) || [];
 }
 
 function formatDuration(seconds) {
