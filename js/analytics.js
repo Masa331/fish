@@ -51,9 +51,9 @@ function groupByNothing(entries) {
   let totalDuration = 0;
 
   const byTag = entries.reduce((memo, record) => {
-    for (const tag of record.tags) {
-      totalDuration += record.duration;
+    totalDuration += record.duration;
 
+    for (const tag of record.tags) {
       const group = memo[tag] || { tag: tag, duration: 0, descriptions: [] };
 
       group.duration += record.duration;
@@ -105,14 +105,14 @@ function groupByDays(entries) {
     .sort((firstEl, secondEl) => secondEl[0] > firstEl[0]);
 
   groupedAndSorted.forEach(([isoDate, entries]) => {
-    let totalDayDuration = 0;
+    let totalDuration = 0;
     const date = entries.first().date;
     const weekDay = date.dayName();
 
     const byTag = entries.reduce((memo, record) => {
-      for (const tag of record.tags) {
-        totalDayDuration += record.duration;
+      totalDuration += record.duration;
 
+      for (const tag of record.tags) {
         const group = memo[tag] || { tag: tag, duration: 0, descriptions: [] };
 
         group.duration += record.duration;
@@ -139,7 +139,7 @@ function groupByDays(entries) {
 
     const markup = `
       <section>
-        <h2>${isoDate} - ${weekDay} ~ ${formatDuration(totalDayDuration)}</h2>
+        <h2>${isoDate} - ${weekDay} ~ ${formatDuration(totalDuration)}</h2>
         <div class="row">
           <div class="col-2">
             ${tagComponents}
@@ -167,13 +167,13 @@ function groupByWeeks(entries) {
     .sort((firstEl, secondEl) => parseInt(secondEl[0]) > parseInt(firstEl[0]));
 
   groupedAndSorted.forEach(([weekNumber, entries]) => {
-    let totalDayDuration = 0;
+    let totalDuration = 0;
     const date = entries.first().date;
 
     const byTag = entries.reduce((memo, record) => {
-      for (const tag of record.tags) {
-        totalDayDuration += record.duration;
+      totalDuration += record.duration;
 
+      for (const tag of record.tags) {
         const group = memo[tag] || { tag: tag, duration: 0, descriptions: [] };
 
         group.duration += record.duration;
@@ -201,7 +201,7 @@ function groupByWeeks(entries) {
     const weekBoundaries = weekBoundaryDates(weekNumber).map(d => d.iso8601()).join(' - ');
     const markup = `
       <section>
-        <h2>${weekBoundaries}, week ${weekNumber.slice(4)} ~ ${formatDuration(totalDayDuration)}</h2>
+        <h2>${weekBoundaries}, week ${weekNumber.slice(4)} ~ ${formatDuration(totalDuration)}</h2>
         <div class="row">
           <div class="col-2">
             ${tagComponents}
@@ -228,13 +228,13 @@ function groupByMonths(entries) {
     .sort((firstEl, secondEl) => parseInt(secondEl[0]) > parseInt(firstEl[0]));
 
   groupedAndSorted.forEach(([monthName, entries]) => {
-    let totalDayDuration = 0;
+    let totalDuration = 0;
     const date = entries.first().date;
 
     const byTag = entries.reduce((memo, record) => {
-      for (const tag of record.tags) {
-        totalDayDuration += record.duration;
+      totalDuration += record.duration;
 
+      for (const tag of record.tags) {
         const group = memo[tag] || { tag: tag, duration: 0, descriptions: [] };
 
         group.duration += record.duration;
@@ -261,7 +261,7 @@ function groupByMonths(entries) {
 
     const markup = `
       <section>
-        <h2>${monthName} ~ ${formatDuration(totalDayDuration)}</h2>
+        <h2>${monthName} ~ ${formatDuration(totalDuration)}</h2>
         <div class="row">
           <div class="col-2">
             ${tagComponents}
