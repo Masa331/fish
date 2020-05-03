@@ -68,13 +68,12 @@ function groupByNothing(entries) {
   const tagComponents = byTag.map(([tag, group]) => {
     const descriptions = group.descriptions.map(description => `<p>${description}</p>`).join('');
 
-    const markup =
-      `<li>
-        <details>
-          <summary>${tag} ~ ${formatDuration(group.duration)}</summary>
-          ${descriptions}
-        </details>
-      </li>`;
+    const markup = `
+      <details>
+        <summary>${tag} ~ ${formatDuration(group.duration)}</summary>
+        ${descriptions}
+      </details>
+    `;
 
     return markup;
   }).join('');
@@ -82,13 +81,20 @@ function groupByNothing(entries) {
   const markup = `
     <section>
       <h2>all time ~ ${formatDuration(totalDuration)}</h2>
-      <ul>
-        ${tagComponents}
-      </ul>
+      <div class="row">
+        <div class="col-2">
+          ${tagComponents}
+        </div>
+
+        <figure class="col-10 figure js-chart">
+          <figcaption class="figure-caption">hours per tag</figcaption>
+        </figure>
+      </div>
     </section>
-  `
+  `;
 
   main.insertAdjacentHTML('beforeend', markup);
+  appendChart(byTag.map(d => d[1]));
 }
 
 function groupByDays(entries) {
@@ -96,7 +102,7 @@ function groupByDays(entries) {
   while (main.lastChild) { main.removeChild(main.lastChild) };
 
   const groupedAndSorted = entries.groupBy(entry => entry.date.iso8601()).entries()
-      .sort((firstEl, secondEl) => secondEl[0] > firstEl[0]);
+    .sort((firstEl, secondEl) => secondEl[0] > firstEl[0]);
 
   groupedAndSorted.forEach(([isoDate, entries]) => {
     let totalDayDuration = 0;
@@ -121,13 +127,12 @@ function groupByDays(entries) {
     const tagComponents = byTag.map(([tag, group]) => {
       const descriptions = group.descriptions.map(description => `<p>${description}</p>`).join('');
 
-      const markup =
-        `<li>
-          <details>
-            <summary>${tag} ~ ${formatDuration(group.duration)}</summary>
-            ${descriptions}
-          </details>
-        </li>`;
+      const markup = `
+        <details>
+          <summary>${tag} ~ ${formatDuration(group.duration)}</summary>
+          ${descriptions}
+        </details>
+      `;
 
       return markup;
     }).join('');
@@ -135,24 +140,31 @@ function groupByDays(entries) {
     const markup = `
       <section>
         <h2>${isoDate} - ${weekDay} ~ ${formatDuration(totalDayDuration)}</h2>
-        <ul>
-          ${tagComponents}
-        </ul>
+        <div class="row">
+          <div class="col-2">
+            ${tagComponents}
+          </div>
+
+          <figure class="col-auto figure js-chart">
+            <figcaption class="figure-caption">hours per tag</figcaption>
+          </figure>
+        </div>
       </section>
-    `
+    `;
 
     main.insertAdjacentHTML('beforeend', markup);
+    appendChart(byTag.map(d => d[1]));
   });
 }
+
 
 function groupByWeeks(entries) {
   const main = document.getElementById('history');
   while (main.lastChild) { main.removeChild(main.lastChild) };
 
-  const groupedAndSorted =
-    entries
-      .groupBy(entry => entry.date.weekNumber()).entries()
-      .sort((firstEl, secondEl) => parseInt(secondEl[0]) > parseInt(firstEl[0]));
+  const groupedAndSorted = entries.groupBy(entry => entry.date.weekNumber())
+    .entries()
+    .sort((firstEl, secondEl) => parseInt(secondEl[0]) > parseInt(firstEl[0]));
 
   groupedAndSorted.forEach(([weekNumber, entries]) => {
     let totalDayDuration = 0;
@@ -176,13 +188,12 @@ function groupByWeeks(entries) {
     const tagComponents = byTag.map(([tag, group]) => {
       const descriptions = group.descriptions.map(description => `<p>${description}</p>`).join('');
 
-      const markup =
-        `<li>
-          <details>
-            <summary>${tag} ~ ${formatDuration(group.duration)}</summary>
-            ${descriptions}
-          </details>
-        </li>`;
+      const markup = `
+        <details>
+          <summary>${tag} ~ ${formatDuration(group.duration)}</summary>
+          ${descriptions}
+        </details>
+      `;
 
       return markup;
     }).join('');
@@ -191,13 +202,20 @@ function groupByWeeks(entries) {
     const markup = `
       <section>
         <h2>${weekBoundaries}, week ${weekNumber.slice(4)} ~ ${formatDuration(totalDayDuration)}</h2>
-        <ul>
-          ${tagComponents}
-        </ul>
+        <div class="row">
+          <div class="col-2">
+            ${tagComponents}
+          </div>
+
+          <figure class="col-auto figure js-chart">
+            <figcaption class="figure-caption">hours per tag</figcaption>
+          </figure>
+        </div>
       </section>
-    `
+    `;
 
     main.insertAdjacentHTML('beforeend', markup);
+    appendChart(byTag.map(d => d[1]));
   });
 }
 
@@ -205,10 +223,9 @@ function groupByMonths(entries) {
   const main = document.getElementById('history');
   while (main.lastChild) { main.removeChild(main.lastChild) };
 
-  const groupedAndSorted =
-    entries
-      .groupBy(entry => entry.date.monthName()).entries()
-      .sort((firstEl, secondEl) => parseInt(secondEl[0]) > parseInt(firstEl[0]));
+  const groupedAndSorted = entries.groupBy(entry => entry.date.monthName())
+    .entries()
+    .sort((firstEl, secondEl) => parseInt(secondEl[0]) > parseInt(firstEl[0]));
 
   groupedAndSorted.forEach(([monthName, entries]) => {
     let totalDayDuration = 0;
@@ -232,13 +249,12 @@ function groupByMonths(entries) {
     const tagComponents = byTag.map(([tag, group]) => {
       const descriptions = group.descriptions.map(description => `<p>${description}</p>`).join('');
 
-      const markup =
-        `<li>
-          <details>
-            <summary>${tag} ~ ${formatDuration(group.duration)}</summary>
-            ${descriptions}
-          </details>
-        </li>`;
+      const markup = `
+        <details>
+          <summary>${tag} ~ ${formatDuration(group.duration)}</summary>
+          ${descriptions}
+        </details>
+      `;
 
       return markup;
     }).join('');
@@ -246,18 +262,68 @@ function groupByMonths(entries) {
     const markup = `
       <section>
         <h2>${monthName} ~ ${formatDuration(totalDayDuration)}</h2>
-        <ul>
-          ${tagComponents}
-        </ul>
+        <div class="row">
+          <div class="col-2">
+            ${tagComponents}
+          </div>
+
+          <figure class="col-auto figure js-chart">
+            <figcaption class="figure-caption">hours per tag</figcaption>
+          </figure>
+        </div>
       </section>
-    `
+    `;
 
     main.insertAdjacentHTML('beforeend', markup);
+    appendChart(byTag.map(d => d[1]));
   });
 }
 
-function totalDuration(total, record) {
-  return total + record.duration;
+function appendChart(rawData) {
+  const data = rawData.map(d => {
+    d.durationInHours = d.duration / 60 / 60;
+    return d;
+  });
+  const margin = { top: 20, right: 10, bottom: 10, left: 30 };
+  const width = data.length * 40 + margin.left + margin.right;
+  const height = 200;
+
+  const yMax = d3.max([12, d3.max(data, d => d.durationInHours)]);
+  const y = d3.scaleLinear()
+    .domain([0, yMax])
+    .range([height - margin.bottom, margin.top]);
+
+  const x = d3.scaleBand()
+    .domain(data.map(d => d.tag))
+    .range([margin.left, (data.length * 40) + margin.left])
+    .padding(0.3);
+
+  const main = d3.selectAll('section:last-of-type .js-chart');
+  const svg =
+    main.append('svg')
+    .attr('class', 'hours-by-tag-chart border-top')
+    .attr('width', '100%')
+    .attr('viewBox', `0 0 ${width} 200`);
+
+  svg.append('g')
+    .attr('transform', `translate(0, ${height - margin.bottom})`)
+    .attr('class', 'x-axis')
+    .call(d3.axisBottom(x))
+    .attr('text-anchor', 'start')
+
+  svg.append('g')
+    .attr('transform', `translate(${margin.left}, 0)`)
+    .call(d3.axisLeft(y).ticks(4));
+
+  svg.append('g')
+    .attr('fill', 'steelblue')
+    .selectAll('rect')
+    .data(data)
+    .join('rect')
+    .attr('x', d => x(d.tag))
+    .attr('y', d => y(d.durationInHours))
+    .attr('height', d => y(0) - y(d.durationInHours))
+    .attr('width', x.bandwidth());
 }
 
 function formatDuration(seconds) {

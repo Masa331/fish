@@ -42,6 +42,15 @@ a:visited {
   color: blue;
 }
 
+.x-axis text {
+  transform: rotate(30deg) translateX(4px) translateY(-2px);
+}
+
+.hours-by-tag-chart {
+  height: 200px;
+  overflow: visible;
+}
+
 #suggestion:not(:empty):before {
   content: 'Tab to complete: ';
 }
