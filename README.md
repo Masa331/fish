@@ -2,14 +2,15 @@
 
 https://masa331.github.io/fish/
 
-[Shut up and fish](https://www.youtube.com/watch?v=-lH54eA4i8s)
+## What is Fish?
 
-## Various sources which helped
+Fish is personal & team time tracking system. It's goal is to provide deep insights into how you or your team spend your time.
 
-* https://stackoverflow.com/questions/36978192/how-to-get-text-cursor-position-after-keypress-event-happened
-* https://stackoverflow.com/questions/17858174/set-cursor-to-specific-position-on-specific-line-in-a-textarea
-* https://www.w3resource.com/javascript-exercises/javascript-array-exercise-28.php
-* https://stackoverflow.com/questions/9063446/content-aware-css-apply-style-only-if-content-is-available
+## How will Fish help?
+
+* by getting out of your way. Time tracking has to be simple and fast
+* by adapting to your workflow and tools
+* by powerful data analytics
 
 ## License
 
