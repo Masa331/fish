@@ -1,47 +1,67 @@
 window.onload = function() {
-  setInterval(incrementTimer, MINUTE);
-  incrementTimer();
-  document.getElementById('date').valueAsDate = new Date();
-
-  const clearDurationButton = document.getElementById('clearDuration');
-  clearDurationButton.addEventListener('click', clearDuration);
+  Timer.run();
 };
 
-function timerStart() {
-  const rawValue = localStorage.getItem(TIMER_START_STORAGE_KEY);
+class Timer {
+  static start;
+  static intervalId;
 
-  if (rawValue) {
-    return new Date(rawValue);
-  } else {
-    const now = new Date();
-    setTimerStart(now);
-    return now;
+  static run() {
+    Timer.intervalId = setInterval(Timer.render, MINUTE);
+    const savedValue = Timer.retrieveStart();
+
+    if (savedValue) {
+      Timer.start = new Date(savedValue);
+    } else {
+      const now = new Date();
+      Timer.saveStart(now);
+    }
+
+    Timer.render();
   }
-}
 
-function clearDuration() {
-  const now = new Date();
-  setTimerStart(now);
-  incrementTimer();
-}
+  static reset() {
+    const now = new Date();
 
-function setTimerStart(newStart) {
-  localStorage.setItem(TIMER_START_STORAGE_KEY, newStart);
-}
+    Timer.saveStart(now);
+    Timer.render();
+  }
 
-function isTimerEmpty() {
-  const rawValue = localStorage.getItem(TIMER_START_STORAGE_KEY);
-  return rawValue === null;
+  static setStart(event) {
+    const rawDuration = event.target.value;
+    const durationInSeconds = parseDuration(rawDuration);
+    const newTimerStart = new Date(new Date() - durationInSeconds * MS_PER_SECOND);
+
+    Timer.saveStart(newTimerStart);
+  }
+
+  static render() {
+    const now = new Date();
+    const timePassed = now - Timer.start;
+
+    const input = document.getElementById('duration');
+    input.value = formatDuration(timePassed / MS_PER_SECOND);
+  }
+
+  // Private
+
+  static saveStart(newStart) {
+    Timer.start = newStart;
+    localStorage.setItem(TIMER_START_STORAGE_KEY, newStart);
+  }
+
+  static retrieveStart() {
+    return localStorage.getItem(TIMER_START_STORAGE_KEY)
+  }
 }
 
 function addEntry(event) {
   event.preventDefault();
   const durationInput = event.target.duration;
   const descriptionInput = event.target.description;
-  const dateInput = event.target.date;
 
   const guid = uuidv4();
-  const date = dateInput.value ? new Date(dateInput.value) : new Date();
+  const date = new Date();
   const rawDuration = durationInput.value || '0';
   const duration = parseDuration(rawDuration);
   const description = descriptionInput.value || UNSPECIFIED;
@@ -50,17 +70,9 @@ function addEntry(event) {
   saveEntry({ guid, date, duration, tags, description });
   descriptionInput.value = '';
   durationInput.value = '';
-  setTimerStart(new Date());
-  incrementTimer();
+  Timer.reset();
 }
 
-function updateTimerStart(event) {
-  const rawDuration = event.target.value;
-  const durationInSeconds = parseDuration(rawDuration);
-  const newTimerStart = new Date(new Date() - durationInSeconds * MS_PER_SECOND);
-
-  setTimerStart(newTimerStart);
-}
 
 function withoutTagChar(str) {
   return str.replace(/[#@^*]/, '');
@@ -143,14 +155,6 @@ function tagsByOccurence() {
   }).map(item => item[0]);
 
   return result;
-}
-
-function incrementTimer() {
-  const currentDate = new Date();
-  const difference = currentDate - timerStart();
-
-  const input = document.getElementById('duration');
-  input.value = formatDuration(difference / MS_PER_SECOND);
 }
 
 function saveEntry(entry) {
