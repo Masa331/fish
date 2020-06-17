@@ -63,11 +63,21 @@ a:visited {
 svg.deleticon {
   position: absolute;
   display: block;
-  top: 30px;
+  top: 7px;
   right: 14px;
 
   width: 15px;
   height: 15px;
 
   fill: grey;
+}
+
+#duration-row {
+  position: absolute;
+  top: 45%;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100px;
+  left: 0;
+  right: 0;
 }

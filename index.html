@@ -41,16 +41,23 @@
       <div class="row mt-3">
         <div class="col-xl-4 col-lg-6 col-md-8 col-sm-10">
           <form class="form" onsubmit="addEntry(event)">
-            <div class="form-row">
-              <div class="form-group col-auto">
-                <label for="duration">duration</label>
-                <input type="text" id="duration" class="form-control" name="duration" placeholder="duration" oninput="Timer.setStart(event)">
-                <svg class="deleticon" xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512' onclick="Timer.reset()">
-                  <title>clear duration</title>
-                  <path d='M256,48C141.31,48,48,141.31,48,256s93.31,208,208,208,208-93.31,208-208S370.69,48,256,48Zm75.31,260.69a16,16,0,1,1-22.62,22.62L256,278.63l-52.69,52.68a16,16,0,0,1-22.62-22.62L233.37,256l-52.68-52.69a16,16,0,0,1,22.62-22.62L256,233.37l52.69-52.68a16,16,0,0,1,22.62,22.62L278.63,256Z'/>
-                </svg>
+            <label for="duration" class="d-block">duration</label>
+
+            <div class="d-inline-block position-relative">
+              <div id="app"></div>
+
+              <div id="duration-row" class="form-row position-absolute">
+                <div class="form-group col-auto">
+                  <input type="text" id="duration" class="form-control" name="duration" placeholder="duration" oninput="Timer.setStart(event.target.value)">
+                  <svg class="deleticon" xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512' onclick="Timer.reset()">
+                    <title>clear duration</title>
+                    <path d='M256,48C141.31,48,48,141.31,48,256s93.31,208,208,208,208-93.31,208-208S370.69,48,256,48Zm75.31,260.69a16,16,0,1,1-22.62,22.62L256,278.63l-52.69,52.68a16,16,0,0,1-22.62-22.62L233.37,256l-52.68-52.69a16,16,0,0,1,22.62-22.62L256,233.37l52.69-52.68a16,16,0,0,1,22.62,22.62L278.63,256Z'/>
+                  </svg>
+
+                </div>
               </div>
             </div>
+
 
             <div class="form-group">
               <label for="description">activity</label>
