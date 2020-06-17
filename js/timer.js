@@ -1,4 +1,5 @@
 window.onload = function() {
+  Slider.draw();
   Timer.run();
 };
 
@@ -20,6 +21,19 @@ class Timer {
     Timer.render();
   }
 
+  static durationInMiliSeconds() {
+    const now = new Date();
+    return now - Timer.start;
+  }
+
+  static durationInSeconds() {
+    return Timer.durationInMiliSeconds() / MS_PER_SECOND;
+  }
+
+  static durationInMinutes() {
+    return Timer.durationInSeconds() / SECOND_PER_MINUTE;
+  }
+
   static reset() {
     const now = new Date();
 
@@ -27,20 +41,50 @@ class Timer {
     Timer.render();
   }
 
-  static setStart(event) {
-    const rawDuration = event.target.value;
+  static setStart(value) {
+    const rawDuration = value;
     const durationInSeconds = parseDuration(rawDuration);
     const newTimerStart = new Date(new Date() - durationInSeconds * MS_PER_SECOND);
 
     Timer.saveStart(newTimerStart);
+    Timer.renderMinutesHint();
   }
 
-  static render() {
-    const now = new Date();
-    const timePassed = now - Timer.start;
+  static addValue(value) {
+    const newTimerStart = new Date(Timer.start - parseDuration(value) * MS_PER_SECOND);
 
+    Timer.saveStart(newTimerStart);
+    Timer.render();
+  }
+
+  static subtractValue(value) {
+
+    let newTimerStart = new Date(Timer.start.getTime() + (parseDuration(value) * MS_PER_SECOND));
+
+    if (newTimerStart > new Date()) {
+      newTimerStart = new Date();
+    }
+
+    Timer.saveStart(newTimerStart);
+    Timer.render();
+  }
+
+  static render(renderSlider = true) {
     const input = document.getElementById('duration');
-    input.value = formatDuration(timePassed / MS_PER_SECOND);
+    input.value = formatDuration(Timer.durationInSeconds());
+
+    Timer.renderMinutesHint();
+
+    if(renderSlider) Slider.renderByTimer();
+  }
+
+  static renderMinutesHint() {
+    const minutes = document.getElementById('minutes');
+    if (Timer.durationInMinutes() > 60) {
+      minutes.innerHTML = `(${Math.round(Timer.durationInMinutes())}m)`;
+    } else {
+      minutes.innerHTML = '';
+    }
   }
 
   // Private
@@ -55,10 +99,168 @@ class Timer {
   }
 }
 
-function addEntry(event) {
+class Slider {
+  static width = 220;
+  static height = 220;
+  static centerX = 110;
+  static centerY = 110;
+  static radius = 100;
+  static tau = 2 * Math.PI;
+  static max = 60;
+  static mouseDown = false;
+  static lastSpinValue = null;
+
+  static draw() {
+    const svg = document.getElementById('slider');
+
+    svg.addEventListener('mousedown', Slider.mouseTouchStart.bind(Slider), false);
+    svg.addEventListener('touchstart', Slider.mouseTouchStart.bind(Slider), false);
+    svg.addEventListener('mousemove', Slider.mouseTouchMove.bind(Slider), false);
+    svg.addEventListener('touchmove', Slider.mouseTouchMove.bind(Slider), false);
+    window.addEventListener('mouseup', Slider.mouseTouchEnd.bind(Slider), false);
+    window.addEventListener('touchend', Slider.mouseTouchEnd.bind(Slider), false);
+  }
+
+  static dragToRmc(rmc) {
+    const currentAngle = Slider.calculateMouseAngle(rmc) * 0.999;
+    const endAngle = Slider.radiansToDegrees(currentAngle);
+
+    const spinning = Slider.lastSpinValue !== null;
+    let hoursCorrection = 0;
+
+    let currentValue = currentAngle / Slider.tau * Slider.max;
+
+    if (spinning) {
+      if (Slider.lastSpinValue > 45 && currentValue < Slider.lastSpinValue && currentValue < 15) {
+        hoursCorrection = 1;
+      } else if (Slider.lastSpinValue < 15 && currentValue > Slider.lastSpinValue && currentValue > 45) {
+        hoursCorrection = -1;
+      }
+    }
+
+    const wholeHours = Math.floor(Timer.durationInMinutes() / MINUTE_PER_HOUR) + hoursCorrection;
+
+    Slider.renderDurationArc(endAngle);
+    Slider.renderHandle(currentAngle);
+
+    Slider.lastSpinValue = currentValue;
+
+    Timer.setStart(String(wholeHours * MINUTE_PER_HOUR + Math.floor(currentValue)));
+    Timer.render(false);
+  }
+
+  static renderByTimer() {
+    const value = Math.round(Timer.durationInMinutes() % 60);
+    const endAngle = Math.floor((value / (Slider.max)) * 360);
+
+    Slider.renderDurationArc(endAngle);
+    Slider.renderHandle(endAngle * Slider.tau / 360);
+  }
+
+  static renderDurationArc(angle) {
+    const path = document.querySelector('#durationPath');
+
+    const arcDescription = Slider.describeArc(Slider.centerX, Slider.centerY, 0, angle);
+    path.setAttribute('d', arcDescription);
+  }
+
+  static renderHandle(angle) {
+    const handle = document.querySelector('#sliderHandle');
+    const handleCenter = Slider.calculateHandleCenter(angle);
+    handle.setAttribute('cx', handleCenter.x);
+    handle.setAttribute('cy', handleCenter.y);
+  }
+
+  static mouseTouchStart(e) {
+    if (Slider.mouseDown) return;
+
+    Slider.mouseDown = true;
+    const rmc = Slider.getRelativeMouseCoordinates(e);
+
+    Slider.dragToRmc(rmc);
+  }
+
+  static mouseTouchMove(e) {
+    if (!Slider.mouseDown) return;
+
+    e.preventDefault();
+    const rmc = Slider.getRelativeMouseCoordinates(e);
+    Slider.dragToRmc(rmc);
+  }
+
+  static mouseTouchEnd() {
+    if (!Slider.mouseDown) return;
+
+    Slider.mouseDown = false;
+    Slider.lastSpinValue = null;
+  }
+
+  static describeArc(x, y, startAngle, endAngle) {
+    let endAngleOriginal, start, end, arcSweep, path;
+    endAngleOriginal = endAngle;
+
+    if(endAngleOriginal - startAngle === 360){
+      endAngle = 359;
+    }
+
+    start = Slider.polarToCartesian(x, y, endAngle);
+    end = Slider.polarToCartesian(x, y, startAngle);
+    arcSweep = endAngle - startAngle <= 180 ? '0' : '1';
+
+    if (endAngleOriginal - startAngle === 360) {
+      path = [
+        'M', start.x, start.y,
+        'A', Slider.radius, Slider.radius, 0, arcSweep, 0, end.x, end.y, 'z'
+      ].join(' ');
+    } else {
+      path = [
+        'M', start.x, start.y,
+        'A', Slider.radius, Slider.radius, 0, arcSweep, 0, end.x, end.y
+      ].join(' ');
+    }
+
+    return path;
+  }
+
+  static polarToCartesian(centerX, centerY, angleInDegrees) {
+    const angleInRadians = angleInDegrees * Math.PI / 180;
+    const x = centerX + (Slider.radius * Math.cos(angleInRadians));
+    const y = centerY + (Slider.radius * Math.sin(angleInRadians));
+    return { x, y };
+  }
+
+  static calculateHandleCenter(angle) {
+    const x = Slider.centerX + Math.cos(angle) * Slider.radius;
+    const y = Slider.centerY + Math.sin(angle) * Slider.radius;
+    return { x, y };
+  }
+
+  static getRelativeMouseCoordinates(e) {
+    const svg = document.querySelector('#slider').getBoundingClientRect();
+
+    const x = e.clientX - svg.left;
+    const y = e.clientY - svg.top;
+    return { x, y };
+  }
+
+  static calculateMouseAngle(rmc) {
+    const angle = Math.atan2(rmc.y - Slider.centerY, rmc.x - Slider.centerX);
+    if (angle > - Slider.tau / 2 && angle < - Slider.tau / 4) {
+      return angle + Slider.tau * 1.25;
+    } else {
+      return angle + Slider.tau * 0.25;
+    }
+  }
+
+  static radiansToDegrees(angle) {
+    return angle / (Math.PI / 180);
+  }
+}
+
+function addEntry(form) {
   event.preventDefault();
-  const durationInput = event.target.duration;
-  const descriptionInput = event.target.description;
+  const durationInput = form.duration;
+  const descriptionInput = form.description;
 
   const guid = uuidv4();
   const date = new Date();
@@ -115,6 +317,11 @@ function handleDescriptionChange(event) {
 }
 
 function handleTab(event) {
+  if (event.ctrlKey && (event.keyCode === ENTER_KEY)) {
+    addEntry(event.target.form);
+    return;
+  }
+
   if (event.shiftKey || TAG_SUGGESTIONS.isEmpty()) {
     return;
   }

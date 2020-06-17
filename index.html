@@ -40,25 +40,60 @@
     <main class="container-fluid">
       <div class="row mt-3">
         <div class="col-xl-4 col-lg-6 col-md-8 col-sm-10">
-          <form class="form" onsubmit="addEntry(event)">
-            <div class="form-row">
-              <div class="form-group col-auto">
-                <label for="duration">duration</label>
-                <input type="text" id="duration" class="form-control" name="duration" placeholder="duration" oninput="Timer.setStart(event)">
-                <svg class="deleticon" xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512' onclick="Timer.reset()">
-                  <title>clear duration</title>
-                  <path d='M256,48C141.31,48,48,141.31,48,256s93.31,208,208,208,208-93.31,208-208S370.69,48,256,48Zm75.31,260.69a16,16,0,1,1-22.62,22.62L256,278.63l-52.69,52.68a16,16,0,0,1-22.62-22.62L233.37,256l-52.68-52.69a16,16,0,0,1,22.62-22.62L256,233.37l52.69-52.68a16,16,0,0,1,22.62,22.62L278.63,256Z'/>
+          <form class="form" onsubmit="addEntry(event.target)">
+            <label for="duration" class="d-block">Duration</label>
+
+            <div class="row">
+              <div class="col-5 position-relative">
+                <svg id="slider" height="220" width="220">
+                  <g transform="rotate(-90,110,110)" rad="100">
+                    <path d="M 209.98476951563913 108.25475935627155 A 100 100 0 1 0 210 110 z" style="stroke: rgb(216, 216, 216); stroke-width: 2px; fill: none;"></path>
+                    <path id="durationPath" d="M 210 110 A 100 100 0 0 0 210 110" style="stroke: rgb(168, 168, 168); stroke-width: 2px; fill: none;"></path>
+                    <circle id="sliderHandle" cx="210" cy="110" r="10" style="fill: rgb(136, 136, 136);"></circle>
+                  </g>
                 </svg>
+
+                <div id="duration-row" class="form-row position-absolute">
+                  <div class="form-group col-auto">
+                    <input type="text" id="duration" class="form-control" name="duration" placeholder="duration" oninput="Timer.setStart(event.target.value); Slider.renderByTimer();" autocomplete="off">
+                    <small id="minutes" class="form-text"></small>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col">
+                <p>
+                  <button class="btn btn-outline-secondary" onclick="Timer.subtractValue('1m')" type="button">-1m</button>
+                  <button class="btn btn-outline-secondary" onclick="Timer.subtractValue('5m')" type="button">-5m</button>
+                  <button class="btn btn-outline-secondary" onclick="Timer.subtractValue('10m')" type="button">-10m</button>
+                  <button class="btn btn-outline-secondary" onclick="Timer.subtractValue('15m')" type="button">-15m</button>
+                  <button class="btn btn-outline-secondary" onclick="Timer.subtractValue('30m')" type="button">-30m</button>
+                  <button class="btn btn-outline-secondary" onclick="Timer.subtractValue('1h')" type="button">-1h</button>
+                </p>
+
+                <p>
+                  <button class="btn btn-outline-secondary" onclick="Timer.addValue('1m')" type="button">+1m</button>
+                  <button class="btn btn-outline-secondary" onclick="Timer.addValue('5m')" type="button">+5m</button>
+                  <button class="btn btn-outline-secondary" onclick="Timer.addValue('10m')" type="button">+10m</button>
+                  <button class="btn btn-outline-secondary" onclick="Timer.addValue('15m')" type="button">+15m</button>
+                  <button class="btn btn-outline-secondary" onclick="Timer.addValue('30m')" type="button">+30m</button>
+                  <button class="btn btn-outline-secondary" onclick="Timer.addValue('1h')" type="button">+1h</button>
+                </p>
+
+                <p>
+                  <button class="btn btn-outline-secondary" onclick="Timer.reset()" type="button">reset</button>
+                </p>
               </div>
             </div>
 
+
             <div class="form-group">
-              <label for="description">activity</label>
-              <input type="text" id="description" class="form-control" name="description" placeholder="what are you doing and #tags" autocomplete="off" onkeyup="handleDescriptionChange(event)" onkeydown="handleTab(event)" autofocus>
+              <label for="description">Activity</label>
+              <textarea type="text" id="description" class="form-control" name="description" placeholder="what are you doing and #tags" autocomplete="off" onkeyup="handleDescriptionChange(event)" onkeydown="handleTab(event)" rows="5" autofocus></textarea>
               <span id="suggestion" class="form-text"></span>
             </div>
 
-            <button type="submit" class="btn btn-outline-secondary">submit entry</button>
+            <button type="submit" class="btn btn-outline-primary">Submit</button>
           </form>
         </div>
       </div>
