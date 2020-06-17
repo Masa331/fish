@@ -1,14 +1,15 @@
+let slider;
+
 window.onload = function() {
   Timer.run();
 
-  const slider = new Slider({});
+  slider = new Slider({});
   slider.draw();
 };
 
 class Timer {
   static start;
   static intervalId;
-  // static value;
 
   static run() {
     Timer.intervalId = setInterval(Timer.render, MINUTE);
@@ -55,6 +56,7 @@ class Timer {
   static render() {
     const input = document.getElementById('duration');
     input.value = formatDuration(Timer.durationInSeconds());
+    // slider.redrawByValue(Timer.durationInMinutes());
   }
 
   // Private
@@ -80,7 +82,6 @@ class Slider {
     this.arcBgFractionColor = '#D8D8D8';
 
     this.radius = 100;
-    this.min = 0;
     this.color = '#0984e3';
     this.initialValue = 0;
     this.max = 60;
@@ -88,7 +89,6 @@ class Slider {
     this.mouseDown = false;
 
     this.spinLastValue = null;
-    this.spinStartValue = null;
   }
 
   draw() {
@@ -100,7 +100,7 @@ class Slider {
     svgContainer.appendChild(svg);
     this.container.appendChild(svgContainer);
 
-    const initialAngle = Math.floor( (this.initialValue / (this.max - this.min)) * 360 );
+    const initialAngle = Math.floor( (this.initialValue / (this.max)) * 360 );
 
     const sliderGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     sliderGroup.setAttribute('class', 'sliderSingle');
@@ -156,44 +156,28 @@ class Slider {
     this.updateLegendUI(currentAngle);
   }
 
+  redrawByValue(value) {
+    console.log(value);
+  }
+
   updateLegendUI(currentAngle) {
-    const spinning = Boolean(this.spinLastValue);
+    const spinning = this.spinLastValue !== null;
     let hoursCorrection = 0;
 
-
-    const currentSliderRange = this.max - this.min;
-    let currentValue = this.min + currentAngle / this.tau * currentSliderRange;
-
-    // console.log(spinning);
+    const currentSliderRange = this.max;
+    let currentValue = currentAngle / this.tau * currentSliderRange;
 
     if (spinning) {
-      // console.log('foo');
-      const clockwise = currentValue > this.spinLastValue;
-
-      const crossedZeroClockwise = (this.spinStartValue < this.spinLastValue) && (this.spinLastValue > currentValue) && (currentValue < this.spinStartValue);
-
-      if (crossedZeroClockwise) {
-        console.log('crossed clockwise');
+      if (this.spinLastValue > 45 && currentValue < this.spinLastValue && currentValue < 15) {
+        hoursCorrection = 1;
+      } else if (this.spinLastValue < 15 && currentValue > this.spinLastValue && currentValue > 45) {
+        hoursCorrection = -1;
       }
-      // const crossedZero = 
-
-      // if (clockwise) {
-      //   console.log('spinning clockwise');
-      // } else {
-      //   console.log('spinning counter clockwise');
-      // }
-    } else {
-      this.spinStartValue = currentValue;
     }
 
-    // console.log('start value: ', this.spinStartValue);
+    const wholeHours = Math.floor(Timer.durationInMinutes() / MINUTE_PER_HOUR) + hoursCorrection;
 
-    // console.log('spinLastValue: ', this.spinLastValue);
-    // console.log('currentValue: ', currentValue);
-
-    const wholeHours = Math.floor(Timer.durationInMinutes() / MINUTE_PER_HOUR)
-
-    Timer.setStart(String(wholeHours * MINUTE_PER_HOUR + Math.round(currentValue)));
+    Timer.setStart(String(wholeHours * MINUTE_PER_HOUR + Math.floor(currentValue)));
     Timer.render();
 
     this.spinLastValue = currentValue;
@@ -221,7 +205,6 @@ class Slider {
 
     this.mouseDown = false;
     this.spinLastValue = null;
-    this.spinStartValue = null;
   }
 
   describeArc(x, y, radius, startAngle, endAngle) {
