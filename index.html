@@ -45,15 +45,12 @@
 
             <div class="d-inline-block position-relative">
               <div id="app">
-                <div id="sliderContainer" class="slider__data">
-                  <svg id="slider" height="220" width="220">
-                    <!-- <g id="sliderG" class="sliderSingle" transform="rotate(&#45;90,110,110)" rad="100"> -->
-                    <!--   <circle class="sliderHandle" cx="" cy="99.54715367323466" r="10" style="fill: rgb(136, 136, 136);"></circle> -->
-                    <!-- </g> -->
-                    <g id="sliderG" class="sliderSingle" transform="rotate(-90,110,110)" rad="100">
+                <div id="sliderContainer">
+                  <svg height="220" width="220">
+                    <g class="sliderSingle" transform="rotate(-90,110,110)" rad="100">
                       <path class="sliderSinglePath" d="M 209.98476951563913 108.25475935627155 A 100 100 0 1 0 210 110 z" style="stroke: rgb(216, 216, 216); stroke-width: 2px; fill: none;"></path>
-                      <path class="sliderSinglePathActive" d="M 210 110 A 100 100 0 0 0 210 110" style="stroke: rgb(9, 132, 227); stroke-width: 2px; fill: none;"></path>
-                      <circle class="sliderHandle" cx="210" cy="110" r="10" style="fill: rgb(136, 136, 136);"></circle>
+                      <path id="durationPath" d="M 210 110 A 100 100 0 0 0 210 110" style="stroke: rgb(9, 132, 227); stroke-width: 2px; fill: none;"></path>
+                      <circle id="sliderHandle" cx="210" cy="110" r="10" style="fill: rgb(136, 136, 136);"></circle>
                     </g>
                   </svg>
                 </div>
@@ -61,8 +58,8 @@
 
               <div id="duration-row" class="form-row position-absolute">
                 <div class="form-group col-auto">
-                  <input type="text" id="duration" class="form-control" name="duration" placeholder="duration" oninput="Timer.setStart(event.target.value); Slider.rerender();">
-                  <svg class="deleticon" xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512' onclick="Timer.reset(); Slider.rerender();">
+                  <input type="text" id="duration" class="form-control" name="duration" placeholder="duration" oninput="Timer.setStart(event.target.value); Slider.renderByTimer();">
+                  <svg class="deleticon" xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512' onclick="Timer.reset(); Slider.renderByTimer();">
                     <title>clear duration</title>
                     <path d='M256,48C141.31,48,48,141.31,48,256s93.31,208,208,208,208-93.31,208-208S370.69,48,256,48Zm75.31,260.69a16,16,0,1,1-22.62,22.62L256,278.63l-52.69,52.68a16,16,0,0,1-22.62-22.62L233.37,256l-52.68-52.69a16,16,0,0,1,22.62-22.62L256,233.37l52.69-52.68a16,16,0,0,1,22.62,22.62L278.63,256Z'/>
                   </svg>
