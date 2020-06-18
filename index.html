@@ -56,6 +56,10 @@
                 <div id="duration-row" class="form-row position-absolute">
                   <div class="form-group col-auto">
                     <input type="text" id="duration" class="form-control" name="duration" placeholder="duration" oninput="Timer.setStart(event.target.value); Slider.renderByTimer();" autocomplete="off">
+                    <svg class="deleticon" xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512' onclick="Timer.reset(); Slider.renderByTimer();">
+                      <title>clear duration</title>
+                      <path d='M256,48C141.31,48,48,141.31,48,256s93.31,208,208,208,208-93.31,208-208S370.69,48,256,48Zm75.31,260.69a16,16,0,1,1-22.62,22.62L256,278.63l-52.69,52.68a16,16,0,0,1-22.62-22.62L233.37,256l-52.68-52.69a16,16,0,0,1,22.62-22.62L256,233.37l52.69-52.68a16,16,0,0,1,22.62,22.62L278.63,256Z'/>
+                    </svg>
                     <small id="minutes" class="form-text"></small>
                   </div>
                 </div>
@@ -78,10 +82,6 @@
                   <button class="btn btn-outline-secondary" onclick="Timer.addValue('15m')" type="button">+15m</button>
                   <button class="btn btn-outline-secondary" onclick="Timer.addValue('30m')" type="button">+30m</button>
                   <button class="btn btn-outline-secondary" onclick="Timer.addValue('1h')" type="button">+1h</button>
-                </p>
-
-                <p>
-                  <button class="btn btn-outline-secondary" onclick="Timer.reset()" type="button">reset</button>
                 </p>
               </div>
             </div>
