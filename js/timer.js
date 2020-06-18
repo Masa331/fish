@@ -1,10 +1,9 @@
 let slider;
 
 window.onload = function() {
+  Slider.draw();
   Timer.run();
-
-  slider = new Slider({});
-  slider.draw();
+  // Slider.rerender();
 };
 
 class Timer {
@@ -53,10 +52,11 @@ class Timer {
     Timer.saveStart(newTimerStart);
   }
 
-  static render() {
+  static render(rerenderSlider = true) {
     const input = document.getElementById('duration');
     input.value = formatDuration(Timer.durationInSeconds());
-    // slider.redrawByValue(Timer.durationInMinutes());
+
+    if(rerenderSlider) Slider.rerender();
   }
 
   // Private
@@ -72,105 +72,104 @@ class Timer {
 }
 
 class Slider {
-  constructor(slider) {
-    this.container = document.querySelector('#app');
-    this.sliderWidth = 220;
-    this.sliderHeight = 220;
-    this.cx = this.sliderWidth / 2; // Slider center X coordinate
-    this.cy = this.sliderHeight / 2; // Slider center Y coordinate
-    this.tau = 2 * Math.PI; // Tau constant
-    this.arcBgFractionColor = '#D8D8D8';
+  static width = 220;
+  static height = 220;
+  static centerX = 110;
+  static centerY = 110;
+  static radius = 100;
+  static tau = 2 * Math.PI;
+  static backgroundArcColor = '#D8D8D8';
+  static durationArcColor = '#0984e3';
+  static max = 60;
+  static mouseDown = false;
+  static lastSpinValue = null;
 
-    this.radius = 100;
-    this.color = '#0984e3';
-    this.initialValue = 0;
-    this.max = 60;
+  static draw() {
+    const svgContainer = document.getElementById('sliderContainer');
+    const svg = document.getElementById('slider');
 
-    this.mouseDown = false;
+    const initialAngle = 0;
 
-    this.spinLastValue = null;
+    const slider = document.getElementById('sliderG');
+
+    // Slider.drawArcPath(Slider.backgroundArcColor, Slider.radius, 360, 'bg', slider);
+    // Slider.drawArcPath(Slider.durationArcColor, Slider.radius, 0, 'active', slider);
+    // const handleCenter = Slider.calculateHandleCenter(0, Slider.radius);
+    // const handle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    // handle.setAttribute('class', 'sliderHandle');
+    // handle.setAttribute('cx', handleCenter.x);
+    // handle.setAttribute('cy', handleCenter.y);
+    // handle.setAttribute('r', 10);
+    // handle.style.fill = '#888888';
+    // slider.appendChild(handle);
+
+    svgContainer.addEventListener('mousedown', Slider.mouseTouchStart.bind(Slider), false);
+    svgContainer.addEventListener('touchstart', Slider.mouseTouchStart.bind(Slider), false);
+    svgContainer.addEventListener('mousemove', Slider.mouseTouchMove.bind(Slider), false);
+    svgContainer.addEventListener('touchmove', Slider.mouseTouchMove.bind(Slider), false);
+    window.addEventListener('mouseup', Slider.mouseTouchEnd.bind(Slider), false);
+    window.addEventListener('touchend', Slider.mouseTouchEnd.bind(Slider), false);
   }
 
-  draw() {
-    const svgContainer = document.createElement('div');
-    svgContainer.classList.add('slider__data');
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('height', this.sliderWidth);
-    svg.setAttribute('width', this.sliderHeight);
-    svgContainer.appendChild(svg);
-    this.container.appendChild(svgContainer);
+  // static drawArcPath(color, radius, angle, type, group) {
+  //   const pathClass = (type === 'active') ? 'sliderSinglePathActive' : 'sliderSinglePath';
+  //
+  //   const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  //   path.classList.add(pathClass);
+  //   path.setAttribute('d', Slider.describeArc(Slider.centerX, Slider.centerY, radius, 0, angle));
+  //   path.style.stroke = color;
+  //   path.style.strokeWidth = 2;
+  //   path.style.fill = 'none';
+  //   group.appendChild(path);
+  // }
 
-    const initialAngle = Math.floor( (this.initialValue / (this.max)) * 360 );
-
-    const sliderGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    sliderGroup.setAttribute('class', 'sliderSingle');
-    sliderGroup.setAttribute('transform', 'rotate(-90,' + this.cx + ',' + this.cy + ')');
-    sliderGroup.setAttribute('rad', this.radius);
-    svg.appendChild(sliderGroup);
-
-    this.drawArcPath(this.arcBgFractionColor, this.radius, 360, 'bg', sliderGroup);
-    this.drawArcPath(this.color, this.radius, initialAngle, 'active', sliderGroup);
-
-    const handleCenter = this.calculateHandleCenter(initialAngle * this.tau / 360, this.radius);
-    const handle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    handle.setAttribute('class', 'sliderHandle');
-    handle.setAttribute('cx', handleCenter.x);
-    handle.setAttribute('cy', handleCenter.y);
-    handle.setAttribute('r', 10);
-    handle.style.fill = '#888888';
-    sliderGroup.appendChild(handle);
-
-    svgContainer.addEventListener('mousedown', this.mouseTouchStart.bind(this), false);
-    svgContainer.addEventListener('touchstart', this.mouseTouchStart.bind(this), false);
-    svgContainer.addEventListener('mousemove', this.mouseTouchMove.bind(this), false);
-    svgContainer.addEventListener('touchmove', this.mouseTouchMove.bind(this), false);
-    window.addEventListener('mouseup', this.mouseTouchEnd.bind(this), false);
-    window.addEventListener('touchend', this.mouseTouchEnd.bind(this), false);
-  }
-
-  drawArcPath( color, radius, angle, type, group ) {
-    const pathClass = (type === 'active') ? 'sliderSinglePathActive' : 'sliderSinglePath';
-
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.classList.add(pathClass);
-    path.setAttribute('d', this.describeArc(this.cx, this.cy, radius, 0, angle));
-    path.style.stroke = color;
-    path.style.strokeWidth = 2;
-    path.style.fill = 'none';
-    group.appendChild(path);
-  }
-
-  redraw(rmc) {
+  static redraw(rmc) {
     const activeSlider = document.querySelector('.slider__data g');
     const activePath = activeSlider.querySelector('.sliderSinglePathActive');
-    const radius = +activeSlider.getAttribute('rad');
-    const currentAngle = this.calculateMouseAngle(rmc) * 0.999;
+    const radius = 100;
+    const currentAngle = Slider.calculateMouseAngle(rmc) * 0.999;
 
-    activePath.setAttribute('d', this.describeArc(this.cx, this.cy, radius, 0, this.radiansToDegrees(currentAngle)));
+    activePath.setAttribute('d', Slider.describeArc(Slider.centerX, Slider.centerY, radius, 0, Slider.radiansToDegrees(currentAngle)));
 
     const handle = activeSlider.querySelector('.sliderHandle');
-    const handleCenter = this.calculateHandleCenter(currentAngle, radius);
+    const handleCenter = Slider.calculateHandleCenter(currentAngle, radius);
     handle.setAttribute('cx', handleCenter.x);
     handle.setAttribute('cy', handleCenter.y);
 
-    this.updateLegendUI(currentAngle);
+    Slider.updateLegendUI(currentAngle);
   }
 
-  redrawByValue(value) {
-    console.log(value);
+  static rerender() {
+    const value = Math.round(Timer.durationInMinutes());
+
+    const newAngle = Math.floor( (value / (Slider.max)) * 360 );
+
+    const activeSlider = document.querySelector('.slider__data g');
+
+    const activePath = activeSlider.querySelector('.sliderSinglePathActive');
+    const radius = 100;
+
+    const startAngle = 0;
+    const endAngle = newAngle;
+    activePath.setAttribute('d', Slider.describeArc(Slider.centerX, Slider.centerY, radius, startAngle, endAngle));
+
+    const handle = activeSlider.querySelector('.sliderHandle');
+    const handleCenter = Slider.calculateHandleCenter(endAngle * Slider.tau / 360, Slider.radius);
+    handle.setAttribute('cx', handleCenter.x);
+    handle.setAttribute('cy', handleCenter.y);
   }
 
-  updateLegendUI(currentAngle) {
-    const spinning = this.spinLastValue !== null;
+  static updateLegendUI(currentAngle) {
+    const spinning = Slider.lastSpinValue !== null;
     let hoursCorrection = 0;
 
-    const currentSliderRange = this.max;
-    let currentValue = currentAngle / this.tau * currentSliderRange;
+    const currentSliderRange = Slider.max;
+    let currentValue = currentAngle / Slider.tau * currentSliderRange;
 
     if (spinning) {
-      if (this.spinLastValue > 45 && currentValue < this.spinLastValue && currentValue < 15) {
+      if (Slider.lastSpinValue > 45 && currentValue < Slider.lastSpinValue && currentValue < 15) {
         hoursCorrection = 1;
-      } else if (this.spinLastValue < 15 && currentValue > this.spinLastValue && currentValue > 45) {
+      } else if (Slider.lastSpinValue < 15 && currentValue > Slider.lastSpinValue && currentValue > 45) {
         hoursCorrection = -1;
       }
     }
@@ -178,36 +177,36 @@ class Slider {
     const wholeHours = Math.floor(Timer.durationInMinutes() / MINUTE_PER_HOUR) + hoursCorrection;
 
     Timer.setStart(String(wholeHours * MINUTE_PER_HOUR + Math.floor(currentValue)));
-    Timer.render();
+    Timer.render(false);
 
-    this.spinLastValue = currentValue;
+    Slider.lastSpinValue = currentValue;
   }
 
-  mouseTouchStart(e) {
-    if (this.mouseDown) return;
+  static mouseTouchStart(e) {
+    if (Slider.mouseDown) return;
 
-    this.mouseDown = true;
-    const rmc = this.getRelativeMouseCoordinates(e);
+    Slider.mouseDown = true;
+    const rmc = Slider.getRelativeMouseCoordinates(e);
 
-    this.redraw(rmc);
+    Slider.redraw(rmc);
   }
 
-  mouseTouchMove(e) {
-    if (!this.mouseDown) return;
+  static mouseTouchMove(e) {
+    if (!Slider.mouseDown) return;
 
     e.preventDefault();
-    const rmc = this.getRelativeMouseCoordinates(e);
-    this.redraw(rmc);
+    const rmc = Slider.getRelativeMouseCoordinates(e);
+    Slider.redraw(rmc);
   }
 
-  mouseTouchEnd() {
-    if (!this.mouseDown) return;
+  static mouseTouchEnd() {
+    if (!Slider.mouseDown) return;
 
-    this.mouseDown = false;
-    this.spinLastValue = null;
+    Slider.mouseDown = false;
+    Slider.lastSpinValue = null;
   }
 
-  describeArc(x, y, radius, startAngle, endAngle) {
+  static describeArc(x, y, radius, startAngle, endAngle) {
     let endAngleOriginal, start, end, arcSweep, path;
     endAngleOriginal = endAngle;
 
@@ -215,8 +214,8 @@ class Slider {
       endAngle = 359;
     }
 
-    start = this.polarToCartesian(x, y, radius, endAngle);
-    end = this.polarToCartesian(x, y, radius, startAngle);
+    start = Slider.polarToCartesian(x, y, radius, endAngle);
+    end = Slider.polarToCartesian(x, y, radius, startAngle);
     arcSweep = endAngle - startAngle <= 180 ? '0' : '1';
 
     if (endAngleOriginal - startAngle === 360) {
@@ -234,36 +233,36 @@ class Slider {
     return path;
   }
 
-  polarToCartesian(centerX, centerY, radius, angleInDegrees) {
+  static polarToCartesian(centerX, centerY, radius, angleInDegrees) {
     const angleInRadians = angleInDegrees * Math.PI / 180;
     const x = centerX + (radius * Math.cos(angleInRadians));
     const y = centerY + (radius * Math.sin(angleInRadians));
     return { x, y };
   }
 
-  calculateHandleCenter(angle, radius) {
-    const x = this.cx + Math.cos(angle) * radius;
-    const y = this.cy + Math.sin(angle) * radius;
+  static calculateHandleCenter(angle, radius) {
+    const x = Slider.centerX + Math.cos(angle) * radius;
+    const y = Slider.centerY + Math.sin(angle) * radius;
     return { x, y };
   }
 
-  getRelativeMouseCoordinates(e) {
+  static getRelativeMouseCoordinates(e) {
     const containerRect = document.querySelector('.slider__data').getBoundingClientRect();
     const x = e.clientX - containerRect.left;
     const y = e.clientY - containerRect.top;
     return { x, y };
   }
 
-  calculateMouseAngle(rmc) {
-    const angle = Math.atan2(rmc.y - this.cy, rmc.x - this.cx);
-    if (angle > - this.tau / 2 && angle < - this.tau / 4) {
-      return angle + this.tau * 1.25;
+  static calculateMouseAngle(rmc) {
+    const angle = Math.atan2(rmc.y - Slider.centerY, rmc.x - Slider.centerX);
+    if (angle > - Slider.tau / 2 && angle < - Slider.tau / 4) {
+      return angle + Slider.tau * 1.25;
     } else {
-      return angle + this.tau * 0.25;
+      return angle + Slider.tau * 0.25;
     }
   }
 
-  radiansToDegrees(angle) {
+  static radiansToDegrees(angle) {
     return angle / (Math.PI / 180);
   }
 }
