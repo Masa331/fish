@@ -67,21 +67,21 @@
 
               <div class="col">
                 <p>
-                  <button class="btn btn-outline-secondary" onclick="Timer.subtractValue('1m')" type="button">-1m</button>
-                  <button class="btn btn-outline-secondary" onclick="Timer.subtractValue('5m')" type="button">-5m</button>
-                  <button class="btn btn-outline-secondary" onclick="Timer.subtractValue('10m')" type="button">-10m</button>
-                  <button class="btn btn-outline-secondary" onclick="Timer.subtractValue('15m')" type="button">-15m</button>
-                  <button class="btn btn-outline-secondary" onclick="Timer.subtractValue('30m')" type="button">-30m</button>
-                  <button class="btn btn-outline-secondary" onclick="Timer.subtractValue('1h')" type="button">-1h</button>
+                  <button class="btn btn-outline-secondary" onclick="Timer.subtractValue('1m')" type="button" tabindex="-1">-1m</button>
+                  <button class="btn btn-outline-secondary" onclick="Timer.subtractValue('5m')" type="button" tabindex="-1">-5m</button>
+                  <button class="btn btn-outline-secondary" onclick="Timer.subtractValue('10m')" type="button" tabindex="-1">-10m</button>
+                  <button class="btn btn-outline-secondary" onclick="Timer.subtractValue('15m')" type="button" tabindex="-1">-15m</button>
+                  <button class="btn btn-outline-secondary" onclick="Timer.subtractValue('30m')" type="button" tabindex="-1">-30m</button>
+                  <button class="btn btn-outline-secondary" onclick="Timer.subtractValue('1h')" type="button" tabindex="-1">-1h</button>
                 </p>
 
                 <p>
-                  <button class="btn btn-outline-secondary" onclick="Timer.addValue('1m')" type="button">+1m</button>
-                  <button class="btn btn-outline-secondary" onclick="Timer.addValue('5m')" type="button">+5m</button>
-                  <button class="btn btn-outline-secondary" onclick="Timer.addValue('10m')" type="button">+10m</button>
-                  <button class="btn btn-outline-secondary" onclick="Timer.addValue('15m')" type="button">+15m</button>
-                  <button class="btn btn-outline-secondary" onclick="Timer.addValue('30m')" type="button">+30m</button>
-                  <button class="btn btn-outline-secondary" onclick="Timer.addValue('1h')" type="button">+1h</button>
+                  <button class="btn btn-outline-secondary" onclick="Timer.addValue('1m')" type="button" tabindex="-1">+1m</button>
+                  <button class="btn btn-outline-secondary" onclick="Timer.addValue('5m')" type="button" tabindex="-1">+5m</button>
+                  <button class="btn btn-outline-secondary" onclick="Timer.addValue('10m')" type="button" tabindex="-1">+10m</button>
+                  <button class="btn btn-outline-secondary" onclick="Timer.addValue('15m')" type="button" tabindex="-1">+15m</button>
+                  <button class="btn btn-outline-secondary" onclick="Timer.addValue('30m')" type="button" tabindex="-1">+30m</button>
+                  <button class="btn btn-outline-secondary" onclick="Timer.addValue('1h')" type="button" tabindex="-1">+1h</button>
                 </p>
               </div>
             </div>
@@ -89,7 +89,7 @@
 
             <div class="form-group">
               <label for="description">Activity</label>
-              <textarea type="text" id="description" class="form-control" name="description" placeholder="what are you doing and #tags" autocomplete="off" onkeyup="handleDescriptionChange(event)" onkeydown="handleTab(event)" rows="5" autofocus></textarea>
+              <textarea type="text" id="description" class="form-control" name="description" placeholder="what are you doing and #tags" autocomplete="off" onkeyup="Activity.handleDescriptionChange(event)" onkeydown="Activity.handleTab(event)" rows="5" autofocus></textarea>
               <small id="suggestion" class="form-text"></small>
             </div>
 

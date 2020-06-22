@@ -257,8 +257,97 @@ class Slider {
   }
 }
 
+class Activity {
+  static handleDescriptionChange(event) {
+    const cursorPosition = event.target.selectionStart;
+    const description = event.target.value;
+
+    const descriptionToCursor = description.slice(0, cursorPosition);
+    const match = descriptionToCursor.match(/[#@^*]?\w+$/);
+    const suggestionElement = document.getElementById('suggestion');
+
+    if (match) {
+      const matchStart = match.index;
+      DESCRIPTION_START = description.slice(0, matchStart);
+      DESCRIPTION_END = description.slice(cursorPosition);
+
+
+      CURRENT_WORD = descriptionToCursor.slice(match.index, cursorPosition);
+      if (!TABBING) {
+        STARTING_WORD = CURRENT_WORD;
+      }
+      if(STARTING_WORD.match(/[#@^*]\w*/)) { // starts with tag char
+        TAG_SUGGESTIONS = Activity.tagsByOccurence().filter(tag => tag.startsWith(STARTING_WORD) && tag !== STARTING_WORD);
+      } else {
+        TAG_SUGGESTIONS = Activity.tagsByOccurence().filter(tag => Activity.withoutTagChar(tag).startsWith(Activity.withoutTagChar(STARTING_WORD)) && tag !== STARTING_WORD);
+      }
+
+      suggestionElement.textContent = TAG_SUGGESTIONS.join(' ');
+    } else {
+      TABBING = null;
+      CURRENT_WORD = null;
+      STARTING_WORD = null;
+      TAG_SUGGESTIONS = [];
+      DESCRIPTION_START = null;
+      DESCRIPTION_END = null;
+      suggestionElement.textContent = '';
+    }
+  }
+
+  static handleTab(event) {
+    if (event.ctrlKey && (event.keyCode === ENTER_KEY)) {
+      addEntry(event.target.form);
+      return;
+    }
+
+    if (event.shiftKey || TAG_SUGGESTIONS.isEmpty()) {
+      return;
+    }
+
+    if (event.keyCode === TABKEY) {
+      event.preventDefault();
+      TABBING = true;
+
+      if(TAG_SUGGESTIONS.hasAny()) {
+        let index = TAG_SUGGESTIONS.indexOf(CURRENT_WORD);
+        if (TAG_SUGGESTIONS.length === index + 1) {
+          index = -1;
+        }
+        let filledValue = TAG_SUGGESTIONS[index + 1];
+
+        if (TAG_SUGGESTIONS.length === 1) {
+          filledValue = `${filledValue} `;
+        }
+
+        const newValue = DESCRIPTION_START + filledValue + DESCRIPTION_END;
+        const newCursorPosition = DESCRIPTION_START.length + filledValue.length;
+
+        event.target.value = newValue;
+        event.target.setSelectionRange(newCursorPosition, newCursorPosition);
+      }
+    }
+  }
+
+  static withoutTagChar(str) {
+    return str.replace(/[#@^*]/, '');
+  }
+
+  static tagsByOccurence() {
+    const result = entries().map(entry => entry.tags).flat(2).reduce((memo, item) => {
+      const currentValue = memo[item] || 0;
+      memo[item] = currentValue + 1;
+      return memo;
+    }, {}).entries().sort((first, second) => {
+      return second[1] > first[1];
+    }).map(item => item[0]);
+
+    return result;
+  }
+}
+
 function addEntry(form) {
   event.preventDefault();
+
   const durationInput = form.duration;
   const descriptionInput = form.description;
 
@@ -275,101 +364,7 @@ function addEntry(form) {
   Timer.reset();
 }
 
-
-function withoutTagChar(str) {
-  return str.replace(/[#@^*]/, '');
-}
-
-function handleDescriptionChange(event) {
-  const cursorPosition = event.target.selectionStart;
-  const description = event.target.value;
-
-  const descriptionToCursor = description.slice(0, cursorPosition);
-  const match = descriptionToCursor.match(/[#@^*]?\w+$/);
-  const suggestionElement = document.getElementById('suggestion');
-
-  if (match) {
-    const matchStart = match.index;
-    DESCRIPTION_START = description.slice(0, matchStart);
-    DESCRIPTION_END = description.slice(cursorPosition);
-
-
-    CURRENT_WORD = descriptionToCursor.slice(match.index, cursorPosition);
-    if (!TABBING) {
-      STARTING_WORD = CURRENT_WORD;
-    }
-    if(STARTING_WORD.match(/[#@^*]\w*/)) { // starts with tag char
-      TAG_SUGGESTIONS = tagsByOccurence().filter(tag => tag.startsWith(STARTING_WORD) && tag !== STARTING_WORD);
-    } else {
-      TAG_SUGGESTIONS = tagsByOccurence().filter(tag => withoutTagChar(tag).startsWith(withoutTagChar(STARTING_WORD)) && tag !== STARTING_WORD);
-    }
-
-    suggestionElement.textContent = TAG_SUGGESTIONS.join(' ');
-  } else {
-    TABBING = null;
-    CURRENT_WORD = null;
-    STARTING_WORD = null;
-    TAG_SUGGESTIONS = [];
-    DESCRIPTION_START = null;
-    DESCRIPTION_END = null;
-    suggestionElement.textContent = '';
-  }
-}
-
-function handleTab(event) {
-  if (event.ctrlKey && (event.keyCode === ENTER_KEY)) {
-    addEntry(event.target.form);
-    return;
-  }
-
-  if (event.shiftKey || TAG_SUGGESTIONS.isEmpty()) {
-    return;
-  }
-
-  if (event.keyCode === TABKEY) {
-    event.preventDefault();
-    TABBING = true;
-
-    if(TAG_SUGGESTIONS.hasAny()) {
-      let index = TAG_SUGGESTIONS.indexOf(CURRENT_WORD);
-      if (TAG_SUGGESTIONS.length === index + 1) {
-        index = -1;
-      }
-      let filledValue = TAG_SUGGESTIONS[index + 1];
-
-      if (TAG_SUGGESTIONS.length === 1) {
-        filledValue = `${filledValue} `;
-      }
-
-      const newValue = DESCRIPTION_START + filledValue + DESCRIPTION_END;
-      const newCursorPosition = DESCRIPTION_START.length + filledValue.length;
-
-      event.target.value = newValue;
-      event.target.setSelectionRange(newCursorPosition, newCursorPosition);
-    }
-  }
-}
-
 // Private
-
-function tagsByOccurence() {
-  const result = entries().map(entry => entry.tags).flat(2).reduce((memo, item) => {
-    const currentValue = memo[item] || 0;
-    memo[item] = currentValue + 1;
-    return memo;
-  }, {}).entries().sort((first, second) => {
-    return second[1] > first[1];
-  }).map(item => item[0]);
-
-  return result;
-}
-
-function saveEntry(entry) {
-  const newEntries = entries();
-  newEntries.unshift(entry);
-
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(newEntries));
-}
 
 function uuidv4() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
